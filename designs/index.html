@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KaralaSoft — Homepage design directions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,900&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0f1113;
+      --ink-2: #3f464d;
+      --ink-3: #6d7780;
+      --line: #e2e6ea;
+      --line-2: #eef1f4;
+      --bg: #f7f8fa;
+      --card: #fff;
+      --brand: #10b981;
+      --brand-bright: #00d563;
+      --lavender: #cba6f5;
+      --sky: #aae8ff;
+      --r: 1rem;
+      --ease: cubic-bezier(.33, 1, .68, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink-2);
+      font-family: "DM Sans", Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      color: var(--ink);
+      letter-spacing: -.035em;
+      line-height: 1.1;
+      font-weight: 700
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4.6vw, 3.6rem);
+      font-weight: 900
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 2.6vw, 2.2rem)
+    }
+
+    h3 {
+      font-size: 1.15rem
+    }
+
+    p {
+      margin: 0
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none
+    }
+
+    .mono {
+      font-family: "DM Mono", ui-monospace, monospace
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin-inline: auto;
+      padding-inline: clamp(1.15rem, 4vw, 2.5rem)
+    }
+
+    header {
+      padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2rem, 4vw, 3rem)
+    }
+
+    .lede {
+      margin-top: 1.4rem;
+      max-width: 62ch;
+      font-size: 1.0625em
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+      margin-top: 1.8rem
+    }
+
+    .tags span {
+      font-family: "DM Mono", monospace;
+      font-size: .72rem;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: .28rem .7rem;
+      color: var(--ink-3)
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 2rem;
+      font-size: .9rem;
+      color: var(--ink-3);
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: .5rem 1rem;
+      transition: .2s
+    }
+
+    .back:hover {
+      border-color: var(--ink-3);
+      color: var(--ink)
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+      padding-bottom: 4rem
+    }
+
+    .opt {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1.4rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s
+    }
+
+    .opt:hover {
+      transform: translateY(-.3rem);
+      box-shadow: 0 2rem 4rem -2rem rgb(0 0 0 / 18%);
+      border-color: #cfd6dd
+    }
+
+    .shot {
+      aspect-ratio: 16/10;
+      background: var(--line-2);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden
+    }
+
+    .shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block
+    }
+
+    .body {
+      padding: 1.7rem;
+      display: flex;
+      flex-direction: column;
+      gap: .7rem;
+      flex: 1
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-family: "DM Mono", monospace;
+      font-size: .72rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink-3)
+    }
+
+    .swatch {
+      display: flex;
+      gap: .3rem
+    }
+
+    .swatch i {
+      width: .85rem;
+      height: .85rem;
+      border-radius: 50%;
+      border: 1px solid rgb(0 0 0 / .12)
+    }
+
+    .body p {
+      font-size: .9375rem
+    }
+
+    .meta {
+      margin-top: auto;
+      padding-top: 1.3rem;
+      border-top: 1px solid var(--line-2);
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem
+    }
+
+    .meta span {
+      font-family: "DM Mono", monospace;
+      font-size: .7rem;
+      color: var(--ink-3);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .25rem .6rem
+    }
+
+    .open {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: 1.1rem;
+      font-weight: 700;
+      font-size: .9rem;
+      color: var(--ink);
+      align-self: flex-start
+    }
+
+    .open::after {
+      content: "→";
+      transition: transform .25s var(--ease)
+    }
+
+    .open:hover::after {
+      transform: translateX(4px)
+    }
+
+    .note {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 1.4rem;
+      padding: 1.7rem;
+      margin-bottom: 1.5rem
+    }
+
+    .note h3 {
+      margin-bottom: .7rem
+    }
+
+    .note ul {
+      margin: .8rem 0 0;
+      padding-left: 1.1rem
+    }
+
+    .note li {
+      margin-bottom: .4rem;
+      font-size: .9375rem
+    }
+
+    .note code {
+      font-family: "DM Mono", monospace;
+      font-size: .82rem;
+      background: var(--line-2);
+      padding: .1rem .35rem;
+      border-radius: 4px
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding-block: 2rem;
+      color: var(--ink-3);
+      font-size: .875rem
+    }
+
+    footer .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="wrap">
+    <a class="back" href="all-designs.html">Open the combined viewer →</a>
+    <h1>Homepage design directions</h1>
+    <p class="lede">Four independent homepage builds for KaralaSoft. All take their typographic system, scale
+      discipline and layout rhythm from Netguru — but none of them copies it. Each keeps your emerald brand and your
+      real content. Pick a direction and I'll develop it into the live site.</p>
+    <div class="tags">
+      <span>DM Sans / DM Mono</span>
+      <span>Netguru-derived scale</span>
+      <span>Zero JS dependencies</span>
+      <span>Responsive</span>
+      <span>Reduced-motion safe</span>
+      <span>Distinct art direction each</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <div class="note">
+      <h3>What's shared, what isn't</h3>
+      <p style="font-size:.9375rem">Shared across all of them: Netguru's type scale (<code>6rem/1.1</code> display,
+        <code>3rem/1.25</code> section heads), its <code>0.6rem</code>/<code>1.2rem</code> radii,
+        <code>cubic-bezier(.33,1,.68,1)</code> easing, scroll-reveal with a safety sweep, and count-up stats.
+        Deliberately different: palette treatment, hero composition, section rhythm, and how services and work are
+        presented.</p>
+    </div>
+
+    <div class="grid">
+
+
+      <article class="opt">
+        <div class="shot"><img src="preview/b-hero.png" alt="Design B hero — inverted emerald poster layout"></div>
+        <div class="body">
+          <span class="label">Direction B
+            <span class="swatch"><i style="background:#00d563"></i><i style="background:#0f1113"></i><i
+                style="background:#f2f5f7"></i><i style="background:#9feec4"></i></span>
+          </span>
+          <h2>Brand Poster</h2>
+          <p>Inverted and loud. Full-bleed emerald hero with near-black type, outlined display word, 2px borders and
+            offset shadows throughout. Services become a numbered table; ticker bands divide the sections. Highest
+            memorability, and the one that most needs a designer to restrain it.</p>
+          <div class="meta"><span>inverted hero</span><span>chunky 2px borders</span><span>offset
+              shadows</span><span>ticker dividers</span><span>boldest</span></div>
+          <a class="open" href="all-designs.html#b">Open design B</a>
+        </div>
+      </article>
+
+      <article class="opt">
+        <div class="shot"><img src="preview/c-hero.png" alt="Design C hero — dark technical layout with terminal panel">
+        </div>
+        <div class="body">
+          <span class="label">Direction C
+            <span class="swatch"><i style="background:#0c0e10"></i><i style="background:#eef1f4"></i><i
+                style="background:#10b981"></i><i style="background:#cba6f5"></i></span>
+          </span>
+          <h2>Dark Technical</h2>
+          <p>Engineer-facing. Near-black canvas, mono <code>//</code> labels, hairline rows instead of cards, and a live
+            deploy-log panel as the hero's right half. Lavender and sky accents keep it from being monochrome.
+            </p>
+          <div class="meta"><span>dark canvas</span><span>mono labelling</span><span>terminal hero</span><span>hairline
+              rows</span><span>most technical</span></div>
+          <a class="open" href="all-designs.html#c">Open design C</a>
+        </div>
+      </article>
+
+      <article class="opt">
+        <div class="shot"><img src="preview/d-hero.png"
+            alt="Design D hero — signal blue with slab accent and gradient buttons"></div>
+        <div class="body">
+          <span class="label">Direction D
+            <span class="swatch"><i style="background:#0047ff"></i><i style="background:#00ffd3"></i><i style="background:#08090c"></i><i style="background:#8453d2"></i></span>
+          </span>
+          <h2>Signal Blue</h2>
+          <p>EPAM's system rebuilt with your content. Signal blue <code>#0047FF</code> plus a vivid accent set, a
+            slab-serif headline accent, gradient-border uppercase buttons, frequent-search chips, a working dark/light
+            switcher, and their signature device: a horizontal-scroll infographic of outlined numerals credited to
+            clients.</p>
+          <div class="meta"><span>EPAM blue</span><span>slab accent</span><span>gradient-border
+              buttons</span><span>scroll infographic</span><span>theme switcher</span></div>
+          <a class="open" href="all-designs.html#d">Open design D</a>
+          <a class="open" href="preview/d-impact.png" target="_blank" style="margin-left:1.2rem">See the infographic
+            →</a>
+        </div>
+      </article>
+
+      <article class="opt">
+        <div class="shot"><img src="preview/c-hero.png"
+            alt="Design C hero — dark technical layout with terminal panel"></div>
+        <div class="body">
+          <span class="label">Direction C-alt
+            <span class="swatch"><i style="background:#0c0e10"></i><i style="background:#eef1f4"></i><i
+                style="background:#10b981"></i><i style="background:#aae8ff"></i></span>
+          </span>
+          <h2>Dark Technical · original</h2>
+          <p>The shorter cut of direction C, kept for reference. Same dark canvas, mono <code>//</code> labels and
+            terminal hero, but without the why-grid, stack, team and testimonial blocks — useful if you want the
+            technical tone at a lighter page weight.</p>
+          <div class="meta"><span>dark canvas</span><span>terminal hero</span><span>no extra sections</span><span>lighter
+              weight</span></div>
+          <a class="open" href="all-designs.html#c0">Open C-alt</a>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>KaralaSoft · homepage directions</span>
+      <span class="mono">B / C / D / C-alt — 2026</span>
+    </div>
+  </footer>
+
+</body>
+
+</html>
