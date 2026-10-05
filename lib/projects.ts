@@ -68,6 +68,50 @@ export function normalizeLiveUrl(liveUrl: string | null | undefined): string | n
   }
 }
 
+/**
+ * ------------------------------------------------------------------------------------
+ * Curated live URLs.
+ * ------------------------------------------------------------------------------------
+ * The CMS `live_link` field is only populated for one of the ten projects, so these are
+ * the confirmed public destinations for the remaining projects, keyed by project title.
+ *
+ * Applied in `toProject()` as an override of the API value; anything absent from this map
+ * keeps whatever the API returned (so "POS System with Admin" is unaffected).
+ *
+ * Every value is validated by `normalizeLiveUrl()` before it can reach a card, so a
+ * non-http(s) scheme could never be rendered as a link.
+ * ------------------------------------------------------------------------------------
+ */
+const PROJECT_LIVE_URLS: Readonly<Record<string, string>> = {
+  'garirhat': 'https://garirhat.com/',
+  'wingsblast': 'https://www.wingsblast.com/',
+  'ai chat bot':
+    'https://aws.amazon.com/?nc2=h_home&refid=8b3736ea-3d32-47c9-b37e-0b328c6d92bc',
+  'finance management system': 'https://www.odoo.com/',
+  'e-commerce platform':
+    'https://ads.google.com/intl/en_all/start/overview/?subid=bd-en-gdn-awa-pr-a-pmx!o3~CjwKCAjwlY3WBhANEiwApsNrLQ3fXqBUWdiP4PUO6s7AoiI35FW9BXeMs8XrVsG1CW5aZQ1cQUeDmhoCnDQQAvD_BwE~~~21215869349~&gclsrc=aw.ds&gad_source=1&gad_campaignid=21215869850&gclid=CjwKCAjwlY3WBhANEiwApsNrLQ3fXqBUWdiP4PUO6s7AoiI35FW9BXeMs8XrVsG1CW5aZQ1cQUeDmhoCnDQQAvD_BwE',
+  'hotel management system': 'https://orbitasmartlock.com/',
+  'ticket management system':
+    'https://elevenlabs.io/conversational-ai?utm_source=google&utm_medium=cpc&utm_campaign=t3_nonbrandsearch_conversationalai_english&utm_id=22916818293&utm_term=customer%20service%20voice&utm_content=conversational_ai_-_call_and_support&gad_source=1&gad_campaignid=22916818293&gbraid=0AAAAA_PU6FayDH8QUylWku8Fg_0Po-OvN&gclid=CjwKCAjwlY3WBhANEiwApsNrLU61m2jWSZqK32vOCI7GxBFimNQnfe3Xo-3z_-B2WH4G1Qx1H-PrGhoCLPAQAvD_BwE',
+  'database management system': 'https://www.solarwinds.com/',
+  'e-commerce landing page':
+    'https://www.bitrix24.com/crm/crm-alternative.php?utm_source=google&utm_medium=cpc&utm_campaign=20768088199-158300317089&gad_source=1&gad_campaignid=20768088199&gbraid=0AAAAADJNAbIQS2EeyynMhi--jI3-NUnJZ&gclid=CjwKCAjwlY3WBhANEiwApsNrLZiukI8LC8aMkX0cCIE2uHiHgu7L7GCqEpjaVbtFMt1mUUzj7RQhiBoCw90QAvD_BwE',
+};
+
+/** Case/whitespace-insensitive lookup key for a project title. */
+function liveUrlKey(title: string): string {
+  return title.trim().toLowerCase();
+}
+
+/**
+ * The curated destination for a project title, or `null` when the project has no
+ * confirmed URL. Runs through the same scheme validation as any other link.
+ */
+export function curatedLiveUrl(title: string): string | null {
+  const candidate = PROJECT_LIVE_URLS[liveUrlKey(title)];
+  return candidate === undefined ? null : normalizeLiveUrl(candidate);
+}
+
 /** Coerce one untrusted record into a `Project`, or `null` if unusable. */
 function toProject(record: unknown): Project | null {
   if (!record || typeof record !== 'object') return null;
@@ -97,7 +141,13 @@ function toProject(record: unknown): Project | null {
     imageUrl: resolveProjectImageUrl(
       typeof raw.imageUrl === 'string' ? raw.imageUrl : typeof raw.image_url === 'string' ? raw.image_url : null,
     ),
-    liveUrl: normalizeLiveUrl(typeof raw.liveUrl === 'string' ? raw.liveUrl : typeof raw.live_link === 'string' ? raw.live_link : null),
+    // Curated destination wins; otherwise fall back to the API's own `live_link`.
+    // Projects in neither list (e.g. "POS System with Admin") keep the API value.
+    liveUrl:
+      curatedLiveUrl(title) ??
+      normalizeLiveUrl(
+        typeof raw.liveUrl === 'string' ? raw.liveUrl : typeof raw.live_link === 'string' ? raw.live_link : null,
+      ),
     orderIndex: order,
   };
 }

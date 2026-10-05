@@ -1,8 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { AlertCircle, ArrowUpRight, RefreshCw } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertCircle,
+  ArrowUpRight,
+  ImageOff,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react';
 
 import { fetchProjects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
@@ -11,18 +20,23 @@ import { Button } from '@/components/ui/Button';
 
 type Status = 'loading' | 'ready' | 'error' | 'empty';
 
+/** Sentinel for "no category filter applied" — never collides with a real category. */
+const ALL_CATEGORIES = '__all__';
+
 /* --------------------------------------------------------------- image fallback */
 
-/** Shown when a project has no image, or its image fails to load upstream. */
-function ImageFallback({ title }: { title: string }) {
+/**
+ * Shown when a project has no image, or its image fails to load upstream.
+ * Deliberately text-free — the title is already overlaid at the bottom of the card,
+ * so repeating it here would collide with itself.
+ */
+function ImageFallback() {
   return (
     <span
       aria-hidden="true"
-      className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_35%,rgba(88,236,255,0.18),rgba(83,119,255,0.09)_45%,transparent_72%)]"
+      className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_35%,rgba(88,236,255,0.20),rgba(83,119,255,0.10)_45%,transparent_72%)]"
     >
-      <span className="bg-[linear-gradient(135deg,#ffffff,var(--color-cyan)_60%,var(--color-violet))] bg-clip-text px-6 text-center text-[28px] leading-tight font-extrabold tracking-tight text-transparent">
-        {title}
-      </span>
+      <ImageOff className="size-8 text-cyan/45" strokeWidth={1.5} />
     </span>
   );
 }
@@ -59,13 +73,13 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <ImageFallback title={project.title} />
+          <ImageFallback />
         )}
 
         {/* Bottom gradient — always faintly visible, deepens on hover */}
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(to_top,rgba(5,9,19,0.96)_8%,rgba(5,9,19,0.82)_38%,rgba(5,9,19,0.25)_68%,transparent)] transition-opacity duration-500 group-hover/proj:from-transparent"
+          className="absolute inset-0 bg-[linear-gradient(to_top,rgba(5,9,19,0.98)_0%,rgba(5,9,19,0.93)_26%,rgba(5,9,19,0.62)_52%,rgba(5,9,19,0.12)_78%,transparent)]"
         />
         <span
           aria-hidden="true"
@@ -74,7 +88,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       </div>
 
       {/* Overlaid information */}
-      <div className="absolute inset-x-0 bottom-0 flex flex-col p-5 sm:p-6">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col p-5 [text-shadow:0_1px_12px_rgba(5,9,19,0.9)] sm:p-6">
         {project.category || project.year ? (
           <p className="m-0 mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-cyan uppercase">
             {project.category ? <span className="truncate">{project.category}</span> : null}
@@ -178,6 +192,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+/** Shown when the API itself has no projects yet — distinct from "filters matched none". */
 function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-3 rounded-[26px] border border-line bg-white/[0.02] px-6 py-14 text-center">
@@ -188,11 +203,152 @@ function EmptyState() {
   );
 }
 
+/** Shown when projects exist but the current search/category matches none of them. */
+function NoMatchesState({ onClear }: { onClear: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-4 rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-14 text-center">
+      <span
+        aria-hidden="true"
+        className="grid size-12 place-items-center rounded-[15px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
+      >
+        <Search className="size-5 text-cyan" strokeWidth={2} />
+      </span>
+      <div>
+        <p className="m-0 text-[19px] font-bold">No projects found</p>
+        <p className="mt-1.5 mb-0 text-[15px] text-muted">
+          Try a different search term or category.
+        </p>
+      </div>
+      <Button type="button" variant="ghost" onClick={onClear}>
+        <X aria-hidden="true" className="size-4" />
+        Clear filters
+      </Button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------- controls */
+
+/**
+ * Search + category controls.
+ *
+ * Categories are derived from the fetched projects only — nothing is hardcoded, so the
+ * control set always reflects real CMS data.
+ */
+function Controls({
+  query,
+  onQueryChange,
+  categories,
+  activeCategory,
+  onCategoryChange,
+  resultCount,
+  totalCount,
+}: {
+  query: string;
+  onQueryChange: (value: string) => void;
+  categories: readonly string[];
+  activeCategory: string;
+  onCategoryChange: (value: string) => void;
+  resultCount: number;
+  totalCount: number;
+}) {
+  const searchId = 'projects-search';
+
+  return (
+    <div className="mb-6 lg:mb-7">
+      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center">
+        {/* Search */}
+        <div className="relative flex-1">
+          <label htmlFor={searchId} className="sr-only">
+            Search projects by name, category, description or technology
+          </label>
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted"
+          />
+          <input
+            id={searchId}
+            type="search"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search projects..."
+            autoComplete="off"
+            className="w-full rounded-[14px] border border-line bg-[#081522] py-3.5 pr-11 pl-11 text-white outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-muted-soft/70 focus:border-cyan/40 focus:shadow-[0_0_0_4px_rgba(88,236,255,0.06)] [&::-webkit-search-cancel-button]:hidden"
+          />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => onQueryChange('')}
+              aria-label="Clear search"
+              className="absolute top-1/2 right-3 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-white/10 hover:text-white"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          ) : null}
+        </div>
+
+        {/* Result count */}
+        <p className="m-0 shrink-0 text-[13px] text-muted sm:pl-1">
+          <span className="bg-[linear-gradient(90deg,#fff,var(--color-cyan))] bg-clip-text text-[15px] font-bold text-transparent">
+            {resultCount}
+          </span>{' '}
+          {resultCount === 1 ? 'Project' : 'Projects'}
+          {resultCount !== totalCount ? <span className="text-muted-soft"> of {totalCount}</span> : null}
+        </p>
+      </div>
+
+      {/* Categories — horizontally scrollable so the page never overflows */}
+      <div className="mt-3.5 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <span
+          aria-hidden="true"
+          className="mr-0.5 hidden shrink-0 items-center gap-1.5 text-[12px] tracking-[0.12em] text-muted-soft uppercase sm:flex"
+        >
+          <SlidersHorizontal className="size-3.5" />
+          Filter
+        </span>
+
+        <button
+          type="button"
+          onClick={() => onCategoryChange(ALL_CATEGORIES)}
+          aria-pressed={activeCategory === ALL_CATEGORIES}
+          className={`shrink-0 rounded-full border px-3.5 py-2 text-[13px] whitespace-nowrap transition-all duration-300 ${
+            activeCategory === ALL_CATEGORIES
+              ? 'border-cyan/40 bg-[linear-gradient(135deg,rgba(88,236,255,0.20),rgba(83,119,255,0.22),rgba(156,100,255,0.24))] text-white shadow-[0_10px_30px_rgba(83,119,255,0.20)]'
+              : 'border-line bg-white/[0.035] text-muted hover:border-cyan/25 hover:text-white'
+          }`}
+        >
+          All Projects
+        </button>
+
+        {categories.map((category) => {
+          const active = activeCategory === category;
+          return (
+            <button
+              key={category}
+              type="button"
+              onClick={() => onCategoryChange(category)}
+              aria-pressed={active}
+              className={`shrink-0 rounded-full border px-3.5 py-2 text-[13px] whitespace-nowrap transition-all duration-300 ${
+                active
+                  ? 'border-cyan/40 bg-[linear-gradient(135deg,rgba(88,236,255,0.20),rgba(83,119,255,0.22),rgba(156,100,255,0.24))] text-white shadow-[0_10px_30px_rgba(83,119,255,0.20)]'
+                  : 'border-line bg-white/[0.035] text-muted hover:border-cyan/25 hover:text-white'
+              }`}
+            >
+              {category}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------------ section */
 
 /**
  * Project showcase grid — renders the real projects from the public CMS endpoint,
- * with explicit loading, error, empty and image-failure handling.
+ * with explicit loading, error, empty and image-failure handling, plus client-side
+ * search and category filtering over the already-fetched data.
  */
 export function ProjectsGrid() {
   const [attempt, setAttempt] = useState(0);
@@ -201,6 +357,9 @@ export function ProjectsGrid() {
     projects: [],
   });
   const { status, projects } = state;
+
+  const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORIES);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -227,6 +386,39 @@ export function ProjectsGrid() {
     setAttempt((n) => n + 1);
   }, []);
 
+  const clearFilters = useCallback(() => {
+    setQuery('');
+    setActiveCategory(ALL_CATEGORIES);
+  }, []);
+
+  /** Unique categories taken from the fetched data only, in first-seen order. */
+  const categories = useMemo(() => {
+    const seen = new Set<string>();
+    for (const project of projects) {
+      if (project.category) seen.add(project.category);
+    }
+    return [...seen];
+  }, [projects]);
+
+  /** Case-insensitive match across title, category, description and tags. */
+  const visibleProjects = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return projects.filter((project) => {
+      if (activeCategory !== ALL_CATEGORIES && project.category !== activeCategory) return false;
+      if (!needle) return true;
+      const haystack = [project.title, project.category, project.description, ...project.tags]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [projects, query, activeCategory]);
+
+  // Keep the category selection valid if the data ever changes underneath us.
+  const effectiveCategory =
+    activeCategory === ALL_CATEGORIES || categories.includes(activeCategory)
+      ? activeCategory
+      : ALL_CATEGORIES;
+
   return (
     <div aria-busy={status === 'loading'}>
       <p aria-live="polite" className="sr-only">
@@ -236,7 +428,7 @@ export function ProjectsGrid() {
             ? 'Projects could not be loaded'
             : status === 'empty'
               ? 'No projects listed'
-              : `${projects.length} projects loaded`}
+              : `${visibleProjects.length} of ${projects.length} projects shown`}
       </p>
 
       {status === 'loading' ? (
@@ -256,13 +448,39 @@ export function ProjectsGrid() {
       {status === 'empty' ? <EmptyState /> : null}
 
       {status === 'ready' ? (
-        <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]">
-          {projects.map((project, index) => (
-            <li key={project.id || project.title} className="h-full">
-              <ProjectCard project={project} index={index} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <Controls
+            query={query}
+            onQueryChange={setQuery}
+            categories={categories}
+            activeCategory={effectiveCategory}
+            onCategoryChange={setActiveCategory}
+            resultCount={visibleProjects.length}
+            totalCount={projects.length}
+          />
+
+          {visibleProjects.length === 0 ? (
+            <NoMatchesState onClear={clearFilters} />
+          ) : (
+            <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]">
+              <AnimatePresence mode="popLayout" initial={false}>
+                {visibleProjects.map((project, index) => (
+                  <motion.li
+                    key={project.id || project.title}
+                    layout
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    transition={{ duration: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
+                    className="h-full"
+                  >
+                    <ProjectCard project={project} index={index} />
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+          )}
+        </>
       ) : null}
     </div>
   );
