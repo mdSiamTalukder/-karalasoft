@@ -2,31 +2,23 @@ import type { ContactErrors, ContactValues, SubmitResult } from './types';
 
 /**
  * ------------------------------------------------------------------------------------
- * Contact form integration point.
+ * Browser-side contact submission.
  * ------------------------------------------------------------------------------------
- * There is intentionally **no backend** in this project. Set
- * `NEXT_PUBLIC_CONTACT_ENDPOINT` to a real endpoint (your own Next.js Route Handler,
- * an API gateway, Formspree, a CRM webhook, …) and the form will POST to it as JSON:
+ * Client-safe by design: no Resend, no Zod, no server-only environment variables.
+ * Posts to the Route Handler at `/api/contact`, which performs the authoritative
+ * server-side validation and sends the email.
  *
- *   { "name": string, "email": string, "company": string, "need": string, "message": string }
- *
- * While the variable is empty the form runs in *preview mode*: it validates, shows the
- * loading and success states, and clearly labels the result as a preview.
+ * Field names match `lib/contact-schema.ts` exactly:
+ *   { name, email, company, need, message, website }
+ * `website` is a honeypot — the visible form never asks for it, so real users send ''.
  * ------------------------------------------------------------------------------------
  */
-const CONTACT_ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT ?? '';
+export const CONTACT_ENDPOINT = '/api/contact';
 
-const PREVIEW_LATENCY_MS = 900;
+/** Kept in step with the server schema so messages match before a round trip. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const NAME_MIN = 2;
 const MESSAGE_MIN = 20;
-
-/** `true` when a real endpoint has been provided via `NEXT_PUBLIC_CONTACT_ENDPOINT`. */
-export function isContactEndpointConfigured(): boolean {
-  return CONTACT_ENDPOINT.length > 0;
-}
-
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export const emptyContactValues: ContactValues = {
   name: '',
@@ -36,7 +28,7 @@ export const emptyContactValues: ContactValues = {
   message: '',
 };
 
-/** Client-side validation. Returns a field -> message map (empty when valid). */
+/** Immediate feedback only. The server re-validates and is authoritative. */
 export function validateContactValues(values: ContactValues): ContactErrors {
   const errors: ContactErrors = {};
 
@@ -62,24 +54,35 @@ export function hasErrors(errors: ContactErrors): boolean {
   return Object.keys(errors).length > 0;
 }
 
+const FALLBACK_ERROR = 'Something went wrong while sending your message. Please try again.';
+
+interface ApiResponse {
+  success?: boolean;
+  message?: string;
+}
+
 /**
- * Submit the brief.
- * Resolves with a result object — network failures are converted into
- * `ok: false` results so callers never need a try/catch.
+ * POST the brief to `/api/contact`.
+ *
+ * `honeypot` MUST be the live value of the hidden `website` input. Hard-coding it to
+ * `''` would make the honeypot useless against browser-driven bots, which fill every
+ * input they can find — the server can only spot them if the client actually forwards
+ * what they typed. A real visitor never sees the field, so it is always empty.
+ *
+ * Never throws: network and non-2xx responses are converted into a `SubmitResult`.
  */
-export async function submitContactBrief(values: ContactValues): Promise<SubmitResult> {
+export async function submitContactBrief(
+  values: ContactValues,
+  honeypot = '',
+): Promise<SubmitResult> {
   const payload = {
     name: values.name.trim(),
     email: values.email.trim(),
     company: values.company.trim(),
     need: values.need,
     message: values.message.trim(),
+    website: honeypot,
   };
-
-  if (!isContactEndpointConfigured()) {
-    await delay(PREVIEW_LATENCY_MS);
-    return { ok: true, preview: true };
-  }
 
   try {
     const response = await fetch(CONTACT_ENDPOINT, {
@@ -88,36 +91,21 @@ export async function submitContactBrief(values: ContactValues): Promise<SubmitR
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const detail = await readErrorDetail(response);
-      return {
-        ok: false,
-        preview: false,
-        message:
-          detail ??
-          `The server responded with ${response.status}. Please try again or email us directly.`,
-      };
+    let body: ApiResponse = {};
+    try {
+      body = (await response.json()) as ApiResponse;
+    } catch {
+      /* Non-JSON response — fall through to the generic message. */
     }
 
-    return { ok: true, preview: false };
-  } catch {
-    return {
-      ok: false,
-      preview: false,
-      message: 'We could not reach the server. Check your connection and try again.',
-    };
-  }
-}
-
-async function readErrorDetail(response: Response): Promise<string | undefined> {
-  try {
-    const data: unknown = await response.json();
-    if (data && typeof data === 'object' && 'message' in data) {
-      const { message } = data as { message?: unknown };
-      if (typeof message === 'string' && message.trim()) return message;
+    if (!response.ok || !body.success) {
+      // 400 is a field problem the inline validation already surfaces, so show the
+      // server's clean generic message rather than leaking anything internal.
+      return { ok: false, message: body.message || FALLBACK_ERROR };
     }
+
+    return { ok: true, message: body.message };
   } catch {
-    /* Response had no JSON body — fall back to the generic status message. */
+    return { ok: false, message: FALLBACK_ERROR };
   }
-  return undefined;
 }

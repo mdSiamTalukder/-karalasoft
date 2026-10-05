@@ -3,18 +3,17 @@ import type { Metadata } from 'next';
 import { PageHero } from '@/components/sections/PageHero';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
-import { ProjectShowcase } from '@/components/sections/ProjectShowcase';
-import { projectsShowcase } from '@/lib/content';
+import { ProjectsGrid } from '@/components/sections/ProjectsGrid';
 
 export const metadata: Metadata = {
   title: 'Projects',
   description:
-    'Case studies that show the problem, the product, the engineering and the measurable result of work delivered by KaralaSoft.',
+    'A showcase of solutions delivered by KaralaSoft across marketplaces, gaming, AI, finance, commerce, hospitality and enterprise systems.',
   alternates: { canonical: '/projects' },
   openGraph: {
     title: 'Projects | KaralaSoft',
     description:
-      'Case studies that show the problem, the product, the engineering and the measurable result of work delivered by KaralaSoft.',
+      'A showcase of solutions delivered by KaralaSoft across marketplaces, gaming, AI, finance, commerce, hospitality and enterprise systems.',
     url: '/projects',
   },
 };
@@ -33,14 +32,13 @@ export default function ProjectsPage() {
       <Section labelledBy="projects-page-grid">
         <Container>
           <h2 id="projects-page-grid" className="sr-only">
-            Selected case studies
+            Selected projects
           </h2>
 
-          <ProjectShowcase showcase={projectsShowcase} />
+          <ProjectsGrid />
 
           <p className="mt-3.5 mb-0 text-[13px] text-muted">
-            These are presentation templates rather than claims about specific client projects.
-            Replace them with approved KaralaSoft work and screenshots.
+            Projects marked with an arrow include a public link to the live build.
           </p>
         </Container>
       </Section>

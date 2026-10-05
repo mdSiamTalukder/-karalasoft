@@ -1,34 +1,110 @@
 import {
-  CircleDot,
+  Award,
+  Globe,
+  Handshake,
+  Heart,
+  Layers,
+  Lightbulb,
   MessageSquareText,
-  MessagesSquare,
+  Monitor,
+  Rocket,
   ShieldCheck,
+  Smartphone,
 } from 'lucide-react';
 
-import type { ContactChannel, ValueCard } from './types';
+import type { ContactChannel, CoreValue, StatItem } from './types';
 
 /* -------------------------------------------------------------------------- */
 /*  About                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export const aboutValues: readonly ValueCard[] = [
+/** Opening statement shown under the page heading. */
+export const aboutLead =
+  'KaralaSoft was founded in 2020 with a vision to deliver world-class software solutions. We’re a dedicated team of engineers, designers, and strategists who combine elite technical expertise with personalized service.';
+
+/** What the company does today. */
+export const aboutStory =
+  'Today, we partner with forward-thinking startups and enterprises to build scalable web applications, mobile solutions, desktop software, and enterprise platforms that drive real business growth.';
+
+/** Delivery model / footprint. */
+export const aboutLocationTitle = 'Based in Dhaka, Bangladesh';
+export const aboutLocationDescription =
+  'Operating globally with remote team members and clients across 12+ countries. We deliver world-class software from the heart of South Asia.';
+
+/**
+ * The four solution areas named in the company story, given their own cards so the
+ * section carries visual weight instead of a single paragraph.
+ */
+export const solutionAreas: readonly CoreValue[] = [
   {
-    glyph: '01',
+    icon: Globe,
+    title: 'Web Applications',
+    description: 'Scalable web products built for real users and real load.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile Solutions',
+    description: 'Mobile experiences that stay fast and dependable in the field.',
+  },
+  {
+    icon: Monitor,
+    title: 'Desktop Software',
+    description: 'Native desktop tooling for teams that work without a browser.',
+  },
+  {
+    icon: Layers,
+    title: 'Enterprise Platforms',
+    description: 'Connected platforms that drive genuine business growth.',
+  },
+];
+
+/** Roster intro. */
+export const teamIntro =
+  'A passionate group of engineers, designers, and business professionals dedicated to delivering exceptional results for every client.';
+
+export const aboutStats: readonly StatItem[] = [
+  { value: '12+', label: 'Team members' },
+  { value: '50+', label: 'Projects delivered' },
+  { value: '5+', label: 'Years experience' },
+  { value: '12+', label: 'Countries served' },
+];
+
+export const coreValues: readonly CoreValue[] = [
+  {
+    icon: Award,
+    title: 'Excellence First',
+    description:
+      'We hold ourselves to the highest standards of code quality, security, and performance. Every line matters.',
+  },
+  {
+    icon: Rocket,
+    title: 'Move Fast',
+    description:
+      'Agile development without sacrificing quality. We ship features weekly and iterate based on data.',
+  },
+  {
+    icon: Handshake,
+    title: 'True Partnership',
+    description:
+      'We’re not just vendors—we’re an extension of your team, invested in your long-term success.',
+  },
+  {
+    icon: Heart,
+    title: 'Client Obsessed',
+    description:
+      'Your success is our success. We go above and beyond to exceed expectations on every engagement.',
+  },
+  {
     icon: ShieldCheck,
-    title: 'Engineering quality',
-    description: 'Maintainable, testable and scalable systems built for real users.',
+    title: 'Security First',
+    description:
+      'Enterprise-grade security practices baked into every project from day one. No shortcuts.',
   },
   {
-    glyph: '02',
-    icon: MessagesSquare,
-    title: 'Clear communication',
-    description: 'Visible progress, honest tradeoffs and frequent demos.',
-  },
-  {
-    glyph: '03',
-    icon: CircleDot,
-    title: 'Product thinking',
-    description: 'We care about what should be built, not only what can be coded.',
+    icon: Lightbulb,
+    title: 'Innovation Driven',
+    description:
+      'We stay at the cutting edge of technology, bringing the latest best practices to every project.',
   },
 ];
 

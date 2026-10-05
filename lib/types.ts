@@ -73,6 +73,26 @@ export interface ValueCard {
   readonly description: string;
 }
 
+/** A headline figure, e.g. "50+ / Projects delivered". */
+export interface StatItem {
+  readonly value: string;
+  readonly label: string;
+}
+
+/** A guiding principle. Unlike `ValueCard` these have no decorative glyph. */
+export interface CoreValue {
+  readonly icon: LucideIcon;
+  readonly title: string;
+  readonly description: string;
+}
+
+/** A team member shown in the About roster. */
+export interface TeamMember {
+  readonly name: string;
+  readonly role: string;
+  readonly initials: string;
+}
+
 export interface ContactChannel {
   readonly eyebrow: string;
   readonly title: string;
@@ -113,9 +133,9 @@ export interface ContactValues {
 
 export type ContactErrors = Partial<Record<keyof ContactValues, string>>;
 
+/** Outcome of `submitContactBrief()` — always resolved, never thrown. */
 export interface SubmitResult {
   readonly ok: boolean;
-  /** True when no endpoint is wired up yet, so the UI can label it as a preview. */
-  readonly preview: boolean;
+  /** Safe, user-facing message from the API (or a generic fallback). */
   readonly message?: string;
 }

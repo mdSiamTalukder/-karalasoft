@@ -8,7 +8,6 @@ import { projectNeeds } from '@/lib/about';
 import {
   emptyContactValues,
   hasErrors,
-  isContactEndpointConfigured,
   submitContactBrief,
   validateContactValues,
 } from '@/lib/contact';
@@ -25,17 +24,21 @@ function Field({
   label,
   error,
   hint,
+  hideLabel = false,
   children,
 }: {
   id: string;
   label: string;
   error?: string;
   hint?: string;
+  /** Keeps the label as the accessible name but removes it visually (e.g. when the
+   *  control shows the same wording as its own placeholder). */
+  hideLabel?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label htmlFor={id} className={labelClass}>
+      <label htmlFor={id} className={`${labelClass} ${hideLabel ? 'sr-only' : ''}`}>
         {label}
       </label>
       {children}
@@ -57,10 +60,10 @@ function Field({
  * Controlled project-brief form.
  *
  * States: `idle` → `submitting` → `success` | `error`
- * Validation runs on submit and re-validates a field once it has been touched.
+ * Validation runs on submit and clears per-field as the visitor types.
  *
- * There is no backend. `submitContactBrief()` POSTs to `NEXT_PUBLIC_CONTACT_ENDPOINT`
- * when configured and otherwise resolves in preview mode.
+ * Submits to `POST /api/contact`, which validates server-side and emails the brief via
+ * Resend. Nothing is stored. A honeypot field is included purely as a spam brake.
  */
 export function ContactForm() {
   const uid = useId();
@@ -70,10 +73,8 @@ export function ContactForm() {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [status, setStatus] = useState<ContactStatus>('idle');
   const [feedback, setFeedback] = useState<string>('');
-  const [wasPreview, setWasPreview] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const configured = isContactEndpointConfigured();
   const submitting = status === 'submitting';
 
   function setField(name: keyof ContactValues, value: string) {
@@ -107,29 +108,41 @@ export function ContactForm() {
     setStatus('submitting');
     setFeedback('');
 
-    const result = await submitContactBrief(values);
+    // Forward whatever is currently in the hidden honeypot input. Real visitors never
+    // see it so it stays empty; automated form-fillers that complete every field trip
+    // the server-side check.
+    const honeypotField = formRef.current?.elements.namedItem('website');
+    const honeypot =
+      honeypotField instanceof HTMLInputElement ? honeypotField.value : '';
 
+    const result = await submitContactBrief(values, honeypot);
+
+    // Only clear the visitor's work after the API confirms delivery.
     if (result.ok) {
       setStatus('success');
-      setWasPreview(result.preview);
+      setFeedback(result.message ?? "Thanks! Your message has been sent successfully. We'll get back to you soon.");
       setValues(emptyContactValues);
       setErrors({});
     } else {
       setStatus('error');
-      setFeedback(result.message ?? 'Something went wrong. Please try again.');
+      setFeedback(result.message ?? 'Something went wrong while sending your message. Please try again.');
     }
   }
 
   function resetForm() {
     setStatus('idle');
     setFeedback('');
-    setWasPreview(false);
     setErrors({});
     setValues(emptyContactValues);
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} noValidate className="grid gap-3">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      noValidate
+      className="relative grid gap-3"
+    >
       <Field id={fieldId('name')} label="Your name" error={errors.name}>
         <input
           id={fieldId('name')}
@@ -177,7 +190,9 @@ export function ContactForm() {
         />
       </Field>
 
-      <Field id={fieldId('need')} label="What do you need?" error={errors.need}>
+      {/* `hideLabel` — the control displays "What do you need?" itself as its
+              placeholder, so the label is kept only as the accessible name. */}
+      <Field id={fieldId('need')} label="What do you need?" hideLabel error={errors.need}>
         <select
           id={fieldId('need')}
           name="need"
@@ -188,6 +203,7 @@ export function ContactForm() {
           aria-invalid={Boolean(errors.need)}
           aria-describedby={errors.need ? `${fieldId('need')}-error` : undefined}
         >
+          {/* Placeholder entry: empty value so it can never validate as a choice. */}
           {projectNeeds.map((need, index) => (
             <option key={need} value={index === 0 ? '' : need} disabled={index === 0}>
               {need}
@@ -215,6 +231,23 @@ export function ContactForm() {
           aria-describedby={errors.message ? `${fieldId('message')}-error` : `${fieldId('message')}-hint`}
         />
       </Field>
+
+      {/*
+        Honeypot — off-screen, not focusable and hidden from assistive technology, so it is
+        invisible to humans. Automated fillers that complete every input get flagged by the
+        server, which then discards the submission without sending an email.
+      */}
+      <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+        <label htmlFor={fieldId('website')}>Website</label>
+        <input
+          id={fieldId('website')}
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+        />
+      </div>
 
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <Button type="submit" variant="primary" disabled={submitting} className="min-w-[210px]">
@@ -253,9 +286,8 @@ export function ContactForm() {
             >
               <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
               <span>
-                {wasPreview
-                  ? 'Preview only — the form validated correctly but no endpoint is configured yet. Set NEXT_PUBLIC_CONTACT_ENDPOINT to deliver briefs.'
-                  : 'Thanks — your brief is in. We’ll reply to your work email shortly.'}
+                {feedback ??
+                  "Thanks! Your message has been sent successfully. We'll get back to you soon."}
               </span>
             </motion.p>
           ) : null}
@@ -275,12 +307,6 @@ export function ContactForm() {
           ) : null}
         </AnimatePresence>
       </div>
-
-      {!configured && status !== 'success' ? (
-        <p className="mt-1 text-[13px] text-muted-soft">
-          Preview mode: no submission endpoint is configured, so nothing is stored or sent.
-        </p>
-      ) : null}
     </form>
   );
 }

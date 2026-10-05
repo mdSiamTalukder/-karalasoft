@@ -48,7 +48,7 @@ export default function ContactPage() {
         lead="A short project brief is enough to start. KaralaSoft can help shape the scope, architecture, experience and delivery plan."
       />
 
-      <Section labelledBy="contact-form-heading">
+      <Section alt labelledBy="contact-form-heading">
         <Container className="grid grid-cols-1 gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:gap-[22px]">
           <Card>
             <h2 id="contact-form-heading" className="mt-0 mb-6 text-[clamp(30px,5vw,42px)] leading-none">
@@ -57,7 +57,10 @@ export default function ContactPage() {
             <ContactForm />
           </Card>
 
-          <div>
+          {/* `self-start` keeps this column content-height instead of stretching to the
+              tall form card. Without it each `Card` below resolves its `h-full` against
+              the stretched row height, stacks ~3× and pushes the footer off the page. */}
+          <div className="self-start">
             {contactChannels.map((channel, index) => (
               <Card key={channel.eyebrow} delay={index * 0.08} className={index > 0 ? 'mt-[18px]' : ''}>
                 <Eyebrow>{channel.eyebrow}</Eyebrow>
