@@ -42,7 +42,7 @@ function ProductsError() {
       <Container>
         <div
           role="alert"
-          className="relative overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-12 text-center sm:px-10"
+          className="relative overflow-hidden rounded-[26px] glass px-6 py-12 text-center sm:px-10"
         >
           <span
             aria-hidden="true"
@@ -72,7 +72,7 @@ function ProductsEmpty() {
   return (
     <Section>
       <Container>
-        <div className="relative overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-12 text-center sm:px-10">
+        <div className="relative overflow-hidden rounded-[26px] glass px-6 py-12 text-center sm:px-10">
           <span
             aria-hidden="true"
             className="pointer-events-none absolute -top-[90px] -right-[90px] size-[180px] rounded-full bg-[radial-gradient(circle,rgba(88,236,255,0.12),transparent_70%)]"

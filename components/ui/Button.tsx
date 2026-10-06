@@ -10,17 +10,17 @@ type Variant = 'default' | 'primary' | 'ghost';
  */
 const BASE =
   'group/btn relative inline-flex shrink-0 items-center justify-center gap-2.5 overflow-hidden ' +
-  'rounded-[14px] border border-line px-5 py-3.5 text-[16px] leading-normal text-white ' +
+  'rounded-[14px] border border-line px-5 py-3.5 text-[16px] leading-normal text-on-surface ' +
   'transition duration-300 ease-out ' +
-  'hover:-translate-y-0.5 hover:bg-white/[0.07] active:translate-y-0 ' +
+  'hover:-translate-y-0.5 hover:bg-veil/[0.07] active:translate-y-0 ' +
   'disabled:pointer-events-none disabled:opacity-60';
 
 const VARIANTS: Record<Variant, string> = {
-  default: 'bg-white/[0.035]',
+  default: 'bg-veil/[0.035]',
   primary:
     'border-0 bg-[linear-gradient(135deg,var(--color-cyan),var(--color-blue)_50%,var(--color-violet))] ' +
-    'font-[850] text-[#04101a] shadow-[0_18px_55px_rgba(83,119,255,0.30)]',
-  ghost: 'border-cyan/20 bg-white/[0.035]',
+    'font-[850] text-on-accent shadow-[0_18px_55px_rgba(83,119,255,0.30)]',
+  ghost: 'border-cyan/20 bg-veil/[0.035]',
 };
 
 /**

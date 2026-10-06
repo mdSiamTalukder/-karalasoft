@@ -35,7 +35,7 @@ export function Card({
 }: CardProps) {
   const surface = (
     <div
-      className={`group/card relative h-full overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] p-5 transition-[border-color,box-shadow] duration-300 ease-out hover:border-cyan/30 hover:shadow-[0_28px_70px_rgba(0,0,0,0.25)] sm:p-7 ${className}`}
+      className={`group/card relative h-full overflow-hidden rounded-[26px] glass p-5 transition-[border-color,box-shadow] duration-300 ease-out hover:border-cyan/30 hover:shadow-[0_28px_70px_rgba(0,0,0,0.25)] sm:p-7 ${className}`}
       {...rest}
     >
       {/* `.card::after` — corner glow that scales 1.4× on hover */}

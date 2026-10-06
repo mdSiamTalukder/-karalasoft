@@ -24,8 +24,15 @@ export const siteConfig: SiteConfig = {
   ],
 };
 
-/** Nav links rendered in the desktop bar and the mobile menu (Home excluded). */
-export const primaryNav = siteConfig.nav.filter((item) => item.key !== 'home');
+/**
+ * Primary navigation, in display order:
+ * Home → Services → Products → Projects → About → Contact
+ *
+ * `siteConfig.nav` already lists Home first, so this is the full list as-is. Both the
+ * desktop bar (`Navbar`) and the slide-down panel (`MobileMenu`) map this array, so a
+ * change here updates both without duplicating nav data.
+ */
+export const primaryNav = siteConfig.nav;
 
 export const COMPANY_EMAIL = siteConfig.email;
 export const COMPANY_PHONE = siteConfig.phone;

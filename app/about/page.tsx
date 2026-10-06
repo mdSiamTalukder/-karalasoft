@@ -49,9 +49,9 @@ export default function AboutPage() {
           {aboutStats.map((stat) => (
             <li
               key={stat.label}
-              className="rounded-[22px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-4 py-6 text-center backdrop-blur-[18px] sm:px-6 sm:py-7"
+              className="rounded-[22px] glass px-4 py-6 text-center backdrop-blur-[18px] sm:px-6 sm:py-7"
             >
-              <strong className="block bg-[linear-gradient(90deg,#fff,var(--color-cyan)_45%,var(--color-violet))] bg-clip-text text-[34px] leading-none tracking-[-0.04em] text-transparent sm:text-[42px]">
+              <strong className="block bg-[linear-gradient(90deg,var(--t-grad-ink),var(--color-cyan)_45%,var(--color-violet))] bg-clip-text text-[34px] leading-none tracking-[-0.04em] text-transparent sm:text-[42px]">
                 {stat.value}
               </strong>
               <span className="mt-2 block text-[13px] text-muted">{stat.label}</span>
@@ -84,7 +84,7 @@ export default function AboutPage() {
                     <span
                       role="img"
                       aria-label={area.title}
-                      className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
+                      className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
                     >
                       <Icon aria-hidden="true" className="size-5 text-cyan" strokeWidth={2} />
                     </span>
@@ -116,7 +116,7 @@ export default function AboutPage() {
                     <span
                       role="img"
                       aria-label={value.title}
-                      className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
+                      className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
                     >
                       <Icon aria-hidden="true" className="size-5 text-cyan" strokeWidth={2} />
                     </span>

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { primaryNav, siteConfig } from '@/lib/site';
 import { MobileMenu } from '@/components/layout/MobileMenu';
 import { ButtonLink } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 function isActive(pathname: string, href: string) {
   return href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -41,7 +42,7 @@ export function Navbar() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-[rgba(5,9,19,0.70)] backdrop-blur-[22px]">
+    <header className="sticky top-0 z-50 border-b border-line bg-nav backdrop-blur-[22px]">
       <nav aria-label="Primary" className="container-x flex h-[78px] items-center justify-between gap-4">
         <Link
           href="/"
@@ -50,7 +51,7 @@ export function Navbar() {
         >
           <span
             aria-hidden="true"
-            className="grid size-[42px] place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-[#041018] font-[950] shadow-[0_0_35px_rgba(88,236,255,0.20)]"
+            className="grid size-[42px] place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-on-accent font-[950] shadow-[0_0_35px_rgba(88,236,255,0.20)]"
           >
             {siteConfig.mark}
           </span>
@@ -66,7 +67,7 @@ export function Navbar() {
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={`block rounded-xl px-[13px] py-2.5 text-[16px] transition-colors duration-300 ${
-                    active ? 'bg-white/[0.06] text-white' : 'text-muted hover:bg-white/[0.06] hover:text-white'
+                    active ? 'bg-veil/[0.06] text-on-surface' : 'text-muted hover:bg-veil/[0.06] hover:text-on-surface'
                   }`}
                 >
                   {item.label}
@@ -77,6 +78,8 @@ export function Navbar() {
         </ul>
 
         <div className="flex shrink-0 items-center gap-2.5">
+          <ThemeToggle />
+
           <button
             ref={toggleRef}
             type="button"
@@ -84,7 +87,7 @@ export function Navbar() {
             aria-expanded={open}
             aria-controls={menuId}
             aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
-            className="inline-flex items-center gap-2 rounded-[14px] border border-line bg-white/[0.035] px-4 py-3 text-[16px] leading-none text-white transition-colors duration-300 hover:bg-white/[0.07] lg:hidden"
+            className="inline-flex items-center gap-2 rounded-[14px] border border-line bg-veil/[0.035] px-4 py-3 text-[16px] leading-none text-on-surface transition-colors duration-300 hover:bg-veil/[0.07] lg:hidden"
           >
             <span aria-hidden="true" className="flex w-4 flex-col gap-[3px]">
               <span

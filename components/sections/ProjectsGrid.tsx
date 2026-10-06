@@ -122,7 +122,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             {project.tags.map((tag) => (
               <li
                 key={tag}
-                className="rounded-full border border-white/10 bg-[#0d1b2b]/70 px-2.5 py-1 text-[11px] text-paper-5 backdrop-blur-sm"
+                className="rounded-full border border-line bg-[#0d1b2b]/70 px-2.5 py-1 text-[11px] text-paper-5 backdrop-blur-sm"
               >
                 {tag}
               </li>
@@ -134,7 +134,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   );
 
   const shell =
-    'group/proj relative block h-full overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] backdrop-blur-[18px] transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-2 hover:border-cyan/35 hover:shadow-[0_30px_80px_rgba(0,0,0,0.45)] focus-visible:-translate-y-2 focus-visible:border-cyan/35';
+    'group/proj relative block h-full overflow-hidden rounded-[26px] glass transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-2 hover:border-cyan/35 hover:shadow-[0_30px_80px_rgba(0,0,0,0.45)] focus-visible:-translate-y-2 focus-visible:border-cyan/35';
 
   return (
     <Reveal as="article" className="h-full" delay={(index % 3) * 0.08}>
@@ -161,14 +161,14 @@ function SkeletonCard() {
   return (
     <div
       aria-hidden="true"
-      className="overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))]"
+      className="overflow-hidden rounded-[26px] glass"
     >
-      <div className="aspect-16/10 w-full bg-white/[0.04] [animation:pulseDot_1.8s_ease-in-out_infinite]" />
+      <div className="aspect-16/10 w-full bg-veil/[0.04] [animation:pulseDot_1.8s_ease-in-out_infinite]" />
       <div className="space-y-2.5 p-5 sm:p-6">
-        <div className="h-3 w-1/3 rounded-full bg-white/[0.07]" />
-        <div className="h-5 w-2/3 rounded-full bg-white/[0.07]" />
-        <div className="h-3 w-full rounded-full bg-white/[0.05]" />
-        <div className="h-3 w-4/5 rounded-full bg-white/[0.05]" />
+        <div className="h-3 w-1/3 rounded-full bg-veil/[0.07]" />
+        <div className="h-5 w-2/3 rounded-full bg-veil/[0.07]" />
+        <div className="h-3 w-full rounded-full bg-veil/[0.05]" />
+        <div className="h-3 w-4/5 rounded-full bg-veil/[0.05]" />
       </div>
     </div>
   );
@@ -195,7 +195,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 /** Shown when the API itself has no projects yet — distinct from "filters matched none". */
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-[26px] border border-line bg-white/[0.02] px-6 py-14 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-[26px] border border-line bg-veil/[0.02] px-6 py-14 text-center">
       <p className="m-0 text-[15px] text-muted">
         New case studies are being added. Please check back shortly.
       </p>
@@ -206,10 +206,10 @@ function EmptyState() {
 /** Shown when projects exist but the current search/category matches none of them. */
 function NoMatchesState({ onClear }: { onClear: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-14 text-center">
+    <div className="flex flex-col items-center gap-4 rounded-[26px] glass px-6 py-14 text-center">
       <span
         aria-hidden="true"
-        className="grid size-12 place-items-center rounded-[15px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
+        className="grid size-12 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
       >
         <Search className="size-5 text-cyan" strokeWidth={2} />
       </span>
@@ -273,14 +273,14 @@ function Controls({
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search projects..."
             autoComplete="off"
-            className="w-full rounded-[14px] border border-line bg-[#081522] py-3.5 pr-11 pl-11 text-white outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-muted-soft/70 focus:border-cyan/40 focus:shadow-[0_0_0_4px_rgba(88,236,255,0.06)] [&::-webkit-search-cancel-button]:hidden"
+            className="w-full rounded-[14px] border border-line bg-surface py-3.5 pr-11 pl-11 text-on-surface outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-muted-soft/70 focus:border-cyan/40 focus:shadow-[0_0_0_4px_rgba(88,236,255,0.06)] [&::-webkit-search-cancel-button]:hidden"
           />
           {query ? (
             <button
               type="button"
               onClick={() => onQueryChange('')}
               aria-label="Clear search"
-              className="absolute top-1/2 right-3 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-white/10 hover:text-white"
+              className="absolute top-1/2 right-3 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-veil/10 hover:text-on-surface"
             >
               <X aria-hidden="true" className="size-4" />
             </button>
@@ -289,7 +289,7 @@ function Controls({
 
         {/* Result count */}
         <p className="m-0 shrink-0 text-[13px] text-muted sm:pl-1">
-          <span className="bg-[linear-gradient(90deg,#fff,var(--color-cyan))] bg-clip-text text-[15px] font-bold text-transparent">
+          <span className="bg-[linear-gradient(90deg,var(--t-grad-ink),var(--color-cyan))] bg-clip-text text-[15px] font-bold text-transparent">
             {resultCount}
           </span>{' '}
           {resultCount === 1 ? 'Project' : 'Projects'}
@@ -313,8 +313,8 @@ function Controls({
           aria-pressed={activeCategory === ALL_CATEGORIES}
           className={`shrink-0 rounded-full border px-3.5 py-2 text-[13px] whitespace-nowrap transition-all duration-300 ${
             activeCategory === ALL_CATEGORIES
-              ? 'border-cyan/40 bg-[linear-gradient(135deg,rgba(88,236,255,0.20),rgba(83,119,255,0.22),rgba(156,100,255,0.24))] text-white shadow-[0_10px_30px_rgba(83,119,255,0.20)]'
-              : 'border-line bg-white/[0.035] text-muted hover:border-cyan/25 hover:text-white'
+              ? 'border-cyan/40 bg-[linear-gradient(135deg,rgba(88,236,255,0.20),rgba(83,119,255,0.22),rgba(156,100,255,0.24))] text-on-surface shadow-[0_10px_30px_rgba(83,119,255,0.20)]'
+              : 'border-line bg-veil/[0.035] text-muted hover:border-cyan/25 hover:text-on-surface'
           }`}
         >
           All Projects
@@ -330,8 +330,8 @@ function Controls({
               aria-pressed={active}
               className={`shrink-0 rounded-full border px-3.5 py-2 text-[13px] whitespace-nowrap transition-all duration-300 ${
                 active
-                  ? 'border-cyan/40 bg-[linear-gradient(135deg,rgba(88,236,255,0.20),rgba(83,119,255,0.22),rgba(156,100,255,0.24))] text-white shadow-[0_10px_30px_rgba(83,119,255,0.20)]'
-                  : 'border-line bg-white/[0.035] text-muted hover:border-cyan/25 hover:text-white'
+                  ? 'border-cyan/40 bg-[linear-gradient(135deg,rgba(88,236,255,0.20),rgba(83,119,255,0.22),rgba(156,100,255,0.24))] text-on-surface shadow-[0_10px_30px_rgba(83,119,255,0.20)]'
+                  : 'border-line bg-veil/[0.035] text-muted hover:border-cyan/25 hover:text-on-surface'
               }`}
             >
               {category}

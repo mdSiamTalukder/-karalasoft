@@ -36,7 +36,7 @@ export function ServicesStrengths() {
               <Card delay={(index % 3) * 0.08}>
                 <span
                   aria-hidden="true"
-                  className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-cyan"
+                  className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-cyan"
                 >
                   {/* createElement: the icon is resolved during render. */}
                   {createElement(getServiceIcon(strength.iconKey), {

@@ -20,7 +20,7 @@ export function IconBadge({
     <span
       role="img"
       aria-label={label}
-      className={`grid size-12 shrink-0 place-items-center rounded-[15px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-[21px] leading-none ${className}`}
+      className={`grid size-12 shrink-0 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-[21px] leading-none ${className}`}
     >
       <span aria-hidden="true">{glyph}</span>
     </span>
@@ -30,7 +30,7 @@ export function IconBadge({
 /** Small rounded chip used for capability tags. */
 export function Tag({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-line bg-[#10243c] px-[9px] py-1.5 text-[12px] text-paper-5">
+    <span className="rounded-full border border-line bg-chip px-[9px] py-1.5 text-[12px] text-paper-5">
       {children}
     </span>
   );

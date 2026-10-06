@@ -27,7 +27,7 @@ function InitialsAvatar({
       aria-hidden="true"
       className={`grid place-items-center bg-[radial-gradient(circle_at_50%_28%,rgba(88,236,255,0.20),rgba(83,119,255,0.10)_45%,transparent_72%)] ${className}`}
     >
-      <span className="bg-[linear-gradient(135deg,#ffffff,var(--color-cyan)_60%,var(--color-violet))] bg-clip-text text-[clamp(40px,7vw,60px)] leading-none font-extrabold tracking-tight text-transparent">
+      <span className="bg-[linear-gradient(135deg,var(--t-grad-ink),var(--color-cyan)_60%,var(--color-violet))] bg-clip-text text-[clamp(40px,7vw,60px)] leading-none font-extrabold tracking-tight text-transparent">
         {initialsFromName(name)}
       </span>
     </span>
@@ -42,7 +42,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
 
   return (
     <Reveal as="article" className="h-full" delay={(index % 4) * 0.07}>
-      <div className="group/member relative flex h-full flex-col overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] backdrop-blur-[18px] transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-1.5 hover:border-cyan/30 hover:shadow-[0_28px_70px_rgba(0,0,0,0.25)]">
+      <div className="group/member relative flex h-full flex-col overflow-hidden rounded-[26px] glass transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-1.5 hover:border-cyan/30 hover:shadow-[0_28px_70px_rgba(0,0,0,0.25)]">
         {/* Photo area — fixed ratio so mixed source crops stay consistent */}
         <div className="relative aspect-4/5 w-full overflow-hidden bg-[radial-gradient(circle_at_50%_30%,rgba(88,236,255,0.14),rgba(83,119,255,0.08)_45%,transparent_70%)]">
           {showPhoto ? (
@@ -90,12 +90,12 @@ function SkeletonCard() {
   return (
     <div
       aria-hidden="true"
-      className="overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))]"
+      className="overflow-hidden rounded-[26px] glass"
     >
-      <div className="aspect-4/5 w-full bg-white/[0.04] [animation:pulseDot_1.8s_ease-in-out_infinite]" />
+      <div className="aspect-4/5 w-full bg-veil/[0.04] [animation:pulseDot_1.8s_ease-in-out_infinite]" />
       <div className="space-y-2.5 p-5 pt-4">
-        <div className="h-4 w-2/3 rounded-full bg-white/[0.07]" />
-        <div className="h-3 w-1/2 rounded-full bg-white/[0.05]" />
+        <div className="h-4 w-2/3 rounded-full bg-veil/[0.07]" />
+        <div className="h-3 w-1/2 rounded-full bg-veil/[0.05]" />
       </div>
     </div>
   );
@@ -136,7 +136,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-[26px] border border-line bg-white/[0.02] px-6 py-14 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-[26px] border border-line bg-veil/[0.02] px-6 py-14 text-center">
       <Users aria-hidden="true" className="size-6 text-muted" />
       <p className="m-0 text-[15px] text-muted">
         Our team profiles are being updated. Please check back shortly.

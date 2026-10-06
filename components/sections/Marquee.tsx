@@ -26,7 +26,7 @@ function Track({ hidden = false }: { hidden?: boolean }) {
 export function Marquee() {
   return (
     <div
-      className="overflow-hidden border-y border-line bg-white/[0.02] py-[15px]"
+      className="overflow-hidden border-y border-line bg-veil/[0.02] py-[15px]"
       role="marquee"
       aria-label="Capabilities"
     >

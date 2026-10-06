@@ -6,8 +6,9 @@ import { siteConfig } from '@/lib/site';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { PublicChrome } from '@/components/layout/PublicChrome';
+import { ThemeScript } from '@/components/layout/ThemeScript';
+import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { ScrollProgress } from '@/components/motion/ScrollProgress';
-import { CursorGlow } from '@/components/motion/CursorGlow';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -57,14 +58,29 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#050913',
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f6f8fc' },
+    { media: '(prefers-color-scheme: dark)', color: '#050913' },
+  ],
+  colorScheme: 'light dark',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    /*
+     * `data-theme` is what the whole design system keys off. It is hard-coded to "dark"
+     * here so the server markup is deterministic; `ThemeScript` upgrades it from
+     * localStorage before first paint. `suppressHydrationWarning` is required because the
+     * script mutates this attribute before React hydrates.
+     */
+    <html lang="en" className="scroll-smooth" data-theme="dark" suppressHydrationWarning>
       <body className="antialiased">
+        {/* Runs before paint — prevents a flash of the wrong theme on refresh. */}
+        <ThemeScript />
+
+        {/* Returns the viewport to the top on route changes. Renders nothing. */}
+        <ScrollToTop />
+
         <a href="#main" className="sr-only-focusable">
           Skip to content
         </a>
@@ -78,7 +94,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           header={
             <>
               <ScrollProgress />
-              <CursorGlow />
               <Navbar />
             </>
           }

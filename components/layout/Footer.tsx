@@ -33,7 +33,7 @@ export function Footer() {
           >
             <span
               aria-hidden="true"
-              className="grid size-[42px] place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-[#041018] font-[950] shadow-[0_0_35px_rgba(88,236,255,0.20)]"
+              className="grid size-[42px] place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-on-accent font-[950] shadow-[0_0_35px_rgba(88,236,255,0.20)]"
             >
               {siteConfig.mark}
             </span>
@@ -52,7 +52,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="my-2 block text-muted transition-colors duration-300 hover:text-white"
+                    className="my-2 block text-muted transition-colors duration-300 hover:text-on-surface"
                   >
                     {link.label}
                   </Link>
@@ -66,13 +66,13 @@ export function Footer() {
           <h4 className="m-0 mb-[14px] text-[16px]">Contact</h4>
           <a
             href={`mailto:${COMPANY_EMAIL}`}
-            className="my-2 block text-muted transition-colors duration-300 hover:text-white"
+            className="my-2 block text-muted transition-colors duration-300 hover:text-on-surface"
           >
             {COMPANY_EMAIL}
           </a>
           <a
             href={`tel:${siteConfig.phoneHref}`}
-            className="my-2 block text-muted transition-colors duration-300 hover:text-white"
+            className="my-2 block text-muted transition-colors duration-300 hover:text-on-surface"
           >
             {COMPANY_PHONE}
           </a>

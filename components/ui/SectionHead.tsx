@@ -21,7 +21,7 @@ export function SectionHead({
     <div className="mb-8 flex flex-col items-end justify-between gap-6 lg:mb-9 lg:flex-row lg:gap-8">
       <div>
         {eyebrow ? (
-          <span className="inline-flex items-center gap-2.5 rounded-full border border-line bg-white/[0.04] px-3 py-2 text-[13px] text-paper-3">
+          <span className="inline-flex items-center gap-2.5 rounded-full border border-line bg-veil/[0.04] px-3 py-2 text-[13px] text-paper-3">
             {eyebrow}
           </span>
         ) : null}

@@ -14,7 +14,7 @@ export function Eyebrow({
 }) {
   return (
     <Tag
-      className={`inline-flex items-center gap-2.5 rounded-full border border-line bg-white/[0.04] px-3 py-2 text-[13px] text-paper-3 shadow-[inset_0_0_30px_rgba(255,255,255,0.02)] ${className}`}
+      className={`inline-flex items-center gap-2.5 rounded-full border border-line bg-veil/[0.04] px-3 py-2 text-[13px] text-paper-3 shadow-[inset_0_0_30px_rgba(255,255,255,0.02)] ${className}`}
     >
       {dot ? <StatusDot /> : null}
       {children}

@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import { primaryNav } from '@/lib/site';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 function isActive(pathname: string, href: string) {
   return href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -62,7 +63,7 @@ export function MobileMenu({
           animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.98 }}
           transition={{ duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
-          className="fixed inset-x-5 top-[88px] z-80 rounded-[20px] border border-line bg-[#081321] p-[18px] shadow-premium lg:hidden"
+          className="fixed inset-x-5 top-[88px] z-80 rounded-[20px] border border-line bg-surface-2 p-[18px] shadow-premium lg:hidden"
         >
           <ul className="grid gap-2">
             {primaryNav.map((item) => {
@@ -74,7 +75,7 @@ export function MobileMenu({
                     onClick={onClose}
                     aria-current={active ? 'page' : undefined}
                     className={`block rounded-xl px-[13px] py-[13px] transition-colors duration-300 ${
-                      active ? 'bg-white/[0.06] text-white' : 'bg-white/[0.03] text-muted hover:text-white'
+                      active ? 'bg-veil/[0.06] text-on-surface' : 'bg-veil/[0.03] text-muted hover:text-on-surface'
                     }`}
                   >
                     {item.label}
@@ -83,6 +84,11 @@ export function MobileMenu({
               );
             })}
           </ul>
+
+          <div className="mt-2 flex items-center justify-between gap-3 border-t border-line pt-3">
+            <span className="text-[14px] text-muted">Theme</span>
+            <ThemeToggle />
+          </div>
         </motion.div>
       ) : null}
     </AnimatePresence>

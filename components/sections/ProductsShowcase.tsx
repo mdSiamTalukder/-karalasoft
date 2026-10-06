@@ -152,7 +152,7 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
                         className={`group/card relative h-full w-full cursor-pointer overflow-hidden rounded-[26px] border p-6 text-left transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(0,0,0,0.28)] sm:p-7 ${
                           isActive
                             ? 'border-cyan/40 bg-cyan/[0.045] shadow-[0_24px_64px_rgba(88,236,255,0.12)]'
-                            : 'border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] hover:border-cyan/30'
+                            : 'glass hover:border-cyan/30'
                         }`}
                       >
                         <span
@@ -161,7 +161,7 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
                         />
                         <span
                           aria-hidden="true"
-                          className="mb-5 grid size-14 place-items-center rounded-[16px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-cyan"
+                          className="mb-5 grid size-14 place-items-center rounded-[16px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-cyan"
                         >
                           <Icon className="size-7" strokeWidth={1.5} />
                         </span>
@@ -220,14 +220,14 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
                     delay={(index % 3) * 0.07}
                     className="h-full"
                   >
-                    <div className="group/feature relative h-full overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] p-6 transition-[border-color,transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-cyan/30 hover:shadow-[0_28px_70px_rgba(0,0,0,0.25)] sm:p-7">
+                    <div className="group/feature relative h-full overflow-hidden rounded-[26px] glass p-6 transition-[border-color,transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-cyan/30 hover:shadow-[0_28px_70px_rgba(0,0,0,0.25)] sm:p-7">
                       <span
                         aria-hidden="true"
                         className="pointer-events-none absolute -top-[80px] -right-[80px] size-[170px] rounded-full bg-[radial-gradient(circle,rgba(156,100,255,0.12),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover/feature:opacity-100"
                       />
                       <span
                         aria-hidden="true"
-                        className={`mb-5 grid size-14 place-items-center rounded-[16px] border border-white/10 bg-gradient-to-br ${gradientFor(feature.iconKey)} transition-transform duration-300 group-hover/feature:scale-110`}
+                        className={`mb-5 grid size-14 place-items-center rounded-[16px] border border-line bg-gradient-to-br ${gradientFor(feature.iconKey)} transition-transform duration-300 group-hover/feature:scale-110`}
                       >
                         <Icon className="size-7 text-paper-5" strokeWidth={1.5} />
                       </span>
@@ -275,7 +275,7 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
                 whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.12 }}
                 transition={{ duration: 0.7, ease: [0.22, 0.61, 0.36, 1] }}
-                className="m-0 overflow-hidden rounded-[30px] border border-line bg-white/[0.02] shadow-[0_30px_100px_rgba(0,0,0,0.45)]"
+                className="m-0 overflow-hidden rounded-[30px] border border-line bg-veil/[0.02] shadow-[0_30px_100px_rgba(0,0,0,0.45)]"
               >
                 <Image
                   src={active.imageUrl}
@@ -291,7 +291,7 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
             <ul className="mt-8 m-0 grid list-none grid-cols-2 gap-3 p-0 lg:grid-cols-4">
               {PREVIEW_HIGHLIGHTS.map((highlight, index) => (
                 <Reveal as="li" key={highlight.label} delay={(index % 4) * 0.06}>
-                  <div className="rounded-[18px] border border-line bg-white/[0.035] px-4 py-4 text-center transition-colors duration-300 hover:border-cyan/25">
+                  <div className="rounded-[18px] border border-line bg-veil/[0.035] px-4 py-4 text-center transition-colors duration-300 hover:border-cyan/25">
                     <p className="m-0 text-[15px] leading-snug text-paper-3">{highlight.label}</p>
                   </div>
                 </Reveal>
@@ -305,7 +305,7 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
       <Section labelledBy="products-cta-heading">
         <Container>
           <Reveal>
-            <div className="relative overflow-hidden rounded-[34px] border border-line bg-[radial-gradient(circle_at_15%_20%,rgba(88,236,255,0.17),transparent_28%),radial-gradient(circle_at_85%_75%,rgba(156,100,255,0.18),transparent_32%),linear-gradient(145deg,#0a1729,#09111e)] px-6 py-10 text-center sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+            <div className="relative overflow-hidden rounded-[34px] border border-line bg-[radial-gradient(circle_at_15%_20%,rgba(88,236,255,0.17),transparent_28%),radial-gradient(circle_at_85%_75%,rgba(156,100,255,0.18),transparent_32%),linear-gradient(145deg,var(--t-cta-from),var(--t-cta-to))] px-6 py-10 text-center sm:px-10 sm:py-14 lg:px-14 lg:py-16">
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute top-0 right-0 size-[280px] rounded-full bg-[radial-gradient(circle,rgba(88,236,255,0.14),transparent_70%)] blur-[90px]"

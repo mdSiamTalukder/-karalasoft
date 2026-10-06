@@ -24,7 +24,7 @@ function ServiceIcon({ iconKey, title }: { iconKey: string; title: string }) {
   return (
     <span
       aria-hidden="true"
-      className="grid size-14 shrink-0 place-items-center rounded-[16px] border border-white/10 bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-cyan"
+      className="grid size-14 shrink-0 place-items-center rounded-[16px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))] text-cyan"
     >
       {createElement(getServiceIcon(iconKey), {
         className: 'size-6',

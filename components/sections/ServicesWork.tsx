@@ -38,7 +38,7 @@ export function ServicesWork({ projects }: { projects: readonly Project[] }) {
                 {project.imageUrl ? (
                   <span
                     aria-hidden="true"
-                    className="relative mb-5 block aspect-[4/3] w-full overflow-hidden rounded-[16px] border border-white/10 bg-[#081522]"
+                    className="relative mb-5 block aspect-[4/3] w-full overflow-hidden rounded-[16px] border border-line bg-surface"
                   >
                     <Image
                       src={project.imageUrl}
@@ -75,7 +75,7 @@ export function ServicesWork({ projects }: { projects: readonly Project[] }) {
         <div className="mt-8 flex justify-center">
           <Link
             href="/projects"
-            className="inline-flex items-center gap-2.5 rounded-[14px] border border-cyan/20 bg-white/[0.035] px-5 py-3.5 text-[16px] text-white transition duration-300 ease-out hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
+            className="inline-flex items-center gap-2.5 rounded-[14px] border border-cyan/20 bg-veil/[0.035] px-5 py-3.5 text-[16px] text-on-surface transition duration-300 ease-out hover:-translate-y-0.5 hover:border-white/20 hover:bg-veil/[0.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
           >
             View All Projects
             <span aria-hidden="true">→</span>

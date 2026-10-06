@@ -14,7 +14,7 @@ export function Section({
       id={id}
       aria-labelledby={labelledBy}
       className={`relative py-[72px] sm:py-20 lg:py-[95px] ${
-        alt ? 'border-y border-line bg-white/[0.025]' : ''
+        alt ? 'border-y border-line bg-veil/[0.025]' : ''
       } ${className}`}
       {...rest}
     >

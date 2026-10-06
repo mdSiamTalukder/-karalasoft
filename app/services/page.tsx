@@ -56,7 +56,7 @@ function ServicesUnavailable() {
       <Container>
         <div
           role="alert"
-          className="relative overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-12 text-center sm:px-10"
+          className="relative overflow-hidden rounded-[26px] glass px-6 py-12 text-center sm:px-10"
         >
           <Eyebrow className="mb-5">Temporarily unavailable</Eyebrow>
           <h1 className="m-0 mb-4 text-[clamp(30px,5vw,56px)] leading-none tracking-[-0.05em]">
@@ -79,7 +79,7 @@ function ServicesEmpty() {
   return (
     <Section>
       <Container>
-        <div className="relative overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-12 text-center sm:px-10">
+        <div className="relative overflow-hidden rounded-[26px] glass px-6 py-12 text-center sm:px-10">
           <Eyebrow className="mb-5">Services</Eyebrow>
           <h1 className="m-0 mb-4 text-[clamp(30px,5vw,56px)] leading-none tracking-[-0.05em]">
             No services published yet

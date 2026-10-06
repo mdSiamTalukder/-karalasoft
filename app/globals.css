@@ -1,38 +1,146 @@
 @import 'tailwindcss';
 
+/* ==========================================================================
+   THEME ARCHITECTURE
+   --------------------------------------------------------------------------
+   One design system, two colour treatments.
+
+   1. `:root` holds the DARK palette — the existing KaralaSoft design, unchanged.
+   2. `[data-theme='light']` overrides ONLY those colour variables.
+   3. `@theme` maps Tailwind's colour utilities onto those variables, so a utility such
+      as `text-ink`, `border-line` or `bg-surface` resolves through the active theme.
+
+   Because every colour goes through a variable, NO component holds theme logic, and
+   layout / typography / spacing / radius / motion stay literally identical in both
+   themes. Only colour, glass, glow and shadow values differ.
+   ========================================================================== */
+
+/* Dark is the default. The selector is intentionally `:root, [data-theme='dark']` so the
+   same block also re-establishes dark values on any *nested* subtree marked dark — that is
+   how the Admin Panel (which is always dark) stays dark regardless of the public theme. */
+:root,
+[data-theme='dark'] {
+  /* --- Surfaces ------------------------------------------------------- */
+  --t-bg: #050913;
+  --t-bg-soft: #08111e;
+  --t-panel: #0b1728;
+  /* Interactive surfaces: form inputs, popovers, dropdown panels. */
+  --t-surface: #081522;
+  --t-surface-2: #081321;
+  /* Small filled chips / badges. */
+  --t-chip: #10243c;
+
+  /* --- Text ----------------------------------------------------------- */
+  --t-ink: #f8fbff;
+  --t-muted: #94a7bd;
+  --t-muted-soft: #6f8399;
+  --t-paper: #cbd8e7;
+  --t-paper-2: #c5d2e2;
+  --t-paper-3: #d2e7fb;
+  --t-paper-4: #d7e4f3;
+  --t-paper-5: #cfe5ff;
+  --t-code: #bfd9f4;
+  /* Text painted on top of a bright brand gradient (buttons, logo mark). */
+  --t-on-accent: #04101a;
+
+  /* --- Lines & glass --------------------------------------------------- */
+  --t-line: rgb(255 255 255 / 0.1);
+  --t-glass-top: rgb(255 255 255 / 0.05);
+  --t-glass-bottom: rgb(255 255 255 / 0.018);
+  --t-grid-line: rgb(255 255 255 / 0.025);
+
+  /*
+   * `veil` is the single source for every translucent control surface (was `bg-white/…`
+   * throughout). In dark mode it is white at exactly the same opacities as before, so
+   * nothing changes; in light mode it becomes the ink colour, which is what keeps buttons,
+   * chips, inputs and hovers readable on a near-white page.
+   */
+  --t-veil: #ffffff;
+  /* Text / icon colour sitting on a veil surface or a pale brand gradient. */
+  --t-on-surface: #ffffff;
+
+  /* --- Chrome ---------------------------------------------------------- */
+  --t-nav: rgb(5 9 19 / 0.7);
+  --t-nav-solid: #050913;
+
+  /* --- Effects --------------------------------------------------------- */
+  --t-selection-bg: rgb(88 236 255 / 0.28);
+  --t-selection-ink: #ffffff;
+  --t-shadow-card: 0 28px 70px rgb(0 0 0 / 0.25);
+  --t-shadow-premium: 0 30px 100px rgb(0 0 0 / 0.45);
+  /* Ambient background wash behind the page (body). */
+  --t-wash-1: rgb(83 119 255 / 0.17);
+  --t-wash-2: rgb(156 100 255 / 0.13);
+  --t-wash-3: rgb(88 236 255 / 0.08);
+  /* Large CTA panel base gradient. */
+  --t-cta-from: #0a1729;
+  --t-cta-to: #09111e;
+  /* Gradient-text start colour. */
+  --t-grad-ink: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT THEME — an intentionally designed light variant of the SAME design.
+   Not an inversion: surfaces are soft neutrals, text is a deep blue-grey ramp,
+   borders are subtle greys, shadows are soft, and the cyan/blue/violet/pink
+   brand accents are preserved (only the glow strength is reduced).
+   -------------------------------------------------------------------------- */
+:root[data-theme='light'],
+[data-theme='light'] {
+  --t-bg: #f6f8fc;
+  --t-bg-soft: #ffffff;
+  --t-panel: #ffffff;
+  --t-surface: #ffffff;
+  --t-surface-2: #ffffff;
+  --t-chip: #e8eff8;
+
+  --t-ink: #0d1726;
+  --t-muted: #4b5c72;
+  /* Small meta text — darkened to clear 4.5:1 on the light background. */
+  --t-muted-soft: #5d6e84;
+  --t-paper: #3a4a60;
+  --t-paper-2: #35455b;
+  --t-paper-3: #2f3f55;
+  --t-paper-4: #26364b;
+  --t-paper-5: #1c2b3e;
+  --t-code: #24405f;
+  /* Still dark ink: sits on the bright brand gradient. */
+  --t-on-accent: #04101a;
+
+  --t-line: rgb(13 23 38 / 0.11);
+  --t-glass-top: rgb(255 255 255 / 0.78);
+  --t-glass-bottom: rgb(255 255 255 / 0.58);
+  --t-veil: #0d1726;
+  --t-on-surface: #0d1726;
+  --t-grid-line: rgb(13 23 38 / 0.045);
+
+  --t-nav: rgb(255 255 255 / 0.78);
+  --t-nav-solid: #ffffff;
+
+  --t-selection-bg: rgb(83 119 255 / 0.16);
+  --t-selection-ink: #0d1726;
+  --t-shadow-card: 0 24px 60px rgb(19 33 56 / 0.1);
+  --t-shadow-premium: 0 28px 80px rgb(19 33 56 / 0.12);
+  --t-wash-1: rgb(83 119 255 / 0.1);
+  --t-wash-2: rgb(156 100 255 / 0.08);
+  --t-wash-3: rgb(88 236 255 / 0.07);
+  --t-cta-from: #ffffff;
+  --t-cta-to: #f2f6fc;
+  --t-grad-ink: #0f1b2d;
+}
+
 /* -------------------------------------------------------------------------- */
-/*  Design tokens — mirrors the CSS custom properties in index-2.html exactly  */
+/*  Design tokens                                                              */
 /* -------------------------------------------------------------------------- */
 
 @theme {
-  /* Surfaces */
-  --color-bg: #050913;
-  --color-bg-soft: #08111e;
-  --color-panel: #0b1728;
-  --color-panel-rgb: 13 27 46;
-
-  /* Text */
-  --color-ink: #f8fbff;
-  --color-muted: #94a7bd;
-  --color-muted-soft: #6f8399;
-  --color-paper: #cbd8e7;
-  --color-paper-2: #c5d2e2;
-  --color-paper-3: #d2e7fb;
-  --color-paper-4: #d7e4f3;
-  --color-paper-5: #cfe5ff;
-
-  /* Brand */
-  --color-cyan: #58ecff;
-  --color-blue: #5377ff;
-  --color-violet: #9c64ff;
-  --color-pink: #ff5bbd;
-  --color-lime: #baff72;
-
-  /* Misc */
-  --color-code: #bfd9f4;
-
-  --shadow-premium: 0 30px 100px rgb(0 0 0 / 0.45);
+  /*
+   * Structure — theme-independent by design. Typography, radius, motion timing and
+   * the brand palette are IDENTICAL in both themes, which is what keeps the two
+   * themes recognisably the same website.
+   */
   --radius-premium: 30px;
+  --shadow-premium: 0 30px 100px rgb(0 0 0 / 0.45);
 
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
@@ -46,6 +154,41 @@
   --animate-spin-slow: spin 18s linear infinite;
   --animate-gradient-move: gradientMove 6s ease-in-out infinite;
   --animate-page-in: pageIn 0.4s ease;
+
+  /* Colour utilities resolve through the active theme's variables. */
+  --color-bg: var(--t-bg);
+  --color-bg-soft: var(--t-bg-soft);
+  --color-panel: var(--t-panel);
+  --color-panel-rgb: 13 27 46;
+  --color-surface: var(--t-surface);
+  --color-surface-2: var(--t-surface-2);
+  --color-chip: var(--t-chip);
+
+  --color-ink: var(--t-ink);
+  --color-muted: var(--t-muted);
+  --color-muted-soft: var(--t-muted-soft);
+  --color-paper: var(--t-paper);
+  --color-paper-2: var(--t-paper-2);
+  --color-paper-3: var(--t-paper-3);
+  --color-paper-4: var(--t-paper-4);
+  --color-paper-5: var(--t-paper-5);
+  --color-code: var(--t-code);
+  --color-on-accent: var(--t-on-accent);
+
+  /* Hairline border token. Previously undefined, which silently produced no border. */
+  --color-line: var(--t-line);
+  /* Translucent control surface + the text/icon colour that sits on it. */
+  --color-veil: var(--t-veil);
+  --color-on-surface: var(--t-on-surface);
+
+  --color-nav: var(--t-nav);
+
+  /* Brand accents — identical in both themes so the gradient identity is preserved. */
+  --color-cyan: #58ecff;
+  --color-blue: #5377ff;
+  --color-violet: #9c64ff;
+  --color-pink: #ff5bbd;
+  --color-lime: #baff72;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -68,17 +211,21 @@
     /* Sticky navbar is 78px tall; keep anchored headings clear of it. */
     scroll-padding-top: 96px;
     -webkit-tap-highlight-color: transparent;
+    /* Both themes transition colour only — never layout, never size. */
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
   }
 
   body {
     margin: 0;
     font-family: var(--font-sans);
-    color: var(--color-ink);
+    color: var(--t-ink);
     background:
-      radial-gradient(circle at 15% 15%, rgb(83 119 255 / 0.17), transparent 28%),
-      radial-gradient(circle at 85% 5%, rgb(156 100 255 / 0.13), transparent 25%),
-      radial-gradient(circle at 55% 90%, rgb(88 236 255 / 0.08), transparent 32%),
-      var(--color-bg);
+      radial-gradient(circle at 15% 15%, var(--t-wash-1), transparent 28%),
+      radial-gradient(circle at 85% 5%, var(--t-wash-2), transparent 25%),
+      radial-gradient(circle at 55% 90%, var(--t-wash-3), transparent 32%),
+      var(--t-bg);
     background-attachment: fixed;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -93,8 +240,8 @@
     pointer-events: none;
     z-index: -3;
     background-image:
-      linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+      linear-gradient(var(--t-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--t-grid-line) 1px, transparent 1px);
     background-size: 42px 42px;
     mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 88%);
     -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 88%);
@@ -135,8 +282,8 @@
   }
 
   ::selection {
-    background: rgb(88 236 255 / 0.28);
-    color: #ffffff;
+    background: var(--t-selection-bg);
+    color: var(--t-selection-ink);
   }
 }
 
@@ -152,8 +299,8 @@
 
   /* Faint glassy overlay used by cards, badges and popovers. */
   .glass {
-    border: 1px solid rgb(255 255 255 / 0.1);
-    background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.018));
+    border: 1px solid var(--t-line);
+    background: linear-gradient(180deg, var(--t-glass-top), var(--t-glass-bottom));
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
   }
@@ -161,7 +308,7 @@
   .lead {
     font-size: 20px;
     line-height: 1.65;
-    color: var(--color-muted);
+    color: var(--t-muted);
     max-width: 720px;
   }
 
@@ -170,7 +317,7 @@
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.7;
-    color: var(--color-code);
+    color: var(--t-code);
   }
 
   .code-box em {
@@ -180,11 +327,50 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Theme toggle                                                              */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * The toggle icon is chosen by CSS from `data-theme` rather than by React state, so the
+ * server-rendered markup and the hydrated tree are always identical (no hydration
+ * mismatch) and there is no icon flash before hydration.
+ */
+.theme-icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Dark theme active → show the Moon (the action is "switch to light"). */
+:root:not([data-theme='light']) .theme-icon-moon,
+:root[data-theme='light'] .theme-icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+:root:not([data-theme='light']) .theme-icon-sun,
+:root[data-theme='light'] .theme-icon-moon {
+  opacity: 0;
+  transform: rotate(-70deg) scale(0.5);
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Utilities                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/* Gradient text stays gradient in both themes; only the base ink changes. */
 @utility grad-text {
-  background: linear-gradient(90deg, #fff 0%, var(--color-cyan) 34%, #b3baff 66%, #daaeff 100%);
+  background: linear-gradient(
+    90deg,
+    var(--t-grad-ink) 0%,
+    var(--color-cyan) 34%,
+    #b3baff 66%,
+    #daaeff 100%
+  );
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -202,7 +388,7 @@
   width: 1px;
   height: 1px;
   padding: 0;
-  margin: -1px;
+  margin: 0;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
@@ -220,8 +406,8 @@
     overflow: visible;
     clip: auto;
     border-radius: 12px;
-    background: var(--color-panel);
-    color: var(--color-ink);
+    background: var(--t-panel);
+    color: var(--t-ink);
   }
 }
 
@@ -236,7 +422,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Keyframes                                                                  */
+/*  Keyframes — unchanged; every animation runs identically in both themes.      */
 /* -------------------------------------------------------------------------- */
 
 @keyframes gradientMove {

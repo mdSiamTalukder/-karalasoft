@@ -15,7 +15,7 @@ import type { ContactErrors, ContactStatus, ContactValues } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 
 const inputClass =
-  'w-full rounded-[14px] border border-line bg-[#081522] px-4 py-[15px] text-white outline-none transition-shadow duration-200 placeholder:text-muted-soft/70 focus:border-cyan/40 focus:shadow-[0_0_0_4px_rgba(88,236,255,0.06)]';
+  'w-full rounded-[14px] border border-line bg-surface px-4 py-[15px] text-on-surface outline-none transition-shadow duration-200 placeholder:text-muted-soft/70 focus:border-cyan/40 focus:shadow-[0_0_0_4px_rgba(88,236,255,0.06)]';
 const labelClass = 'mb-1.5 block text-[13px] font-semibold tracking-wide text-paper-3';
 const errorClass = 'mt-1.5 flex items-center gap-1.5 text-[13px] text-pink';
 

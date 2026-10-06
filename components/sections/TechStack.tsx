@@ -26,7 +26,7 @@ export function TechStack() {
           <ul className="m-0 flex list-none flex-wrap gap-2.5 p-0">
             {techStack.map((tech) => (
               <li key={tech.name}>
-                <span className="inline-block cursor-default rounded-xl border border-line bg-white/[0.035] px-[15px] py-3 text-paper-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/30 hover:text-white">
+                <span className="inline-block cursor-default rounded-xl border border-line bg-veil/[0.035] px-[15px] py-3 text-paper-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/30 hover:text-on-surface">
                   {tech.name}
                 </span>
               </li>

@@ -19,7 +19,7 @@ import type { ReactNode } from 'react';
  * On /admin it renders `children` only, so the panel gets its content with no marketing
  * chrome at all.
  *
- * Server components (Footer) and client components (Navbar, ScrollProgress, CursorGlow) can
+ * Server components (Footer) and client components (Navbar, ScrollProgress) can
  * both be passed in as props.
  */
 export function PublicChrome({

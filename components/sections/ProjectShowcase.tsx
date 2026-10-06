@@ -20,7 +20,7 @@ function ProjectCard({ eyebrow, title, meta, size }: ProjectCardProps) {
   return (
     <Reveal as="article" className="group/proj relative">
       <div
-        className={`relative overflow-hidden rounded-[30px] border border-line bg-[radial-gradient(circle_at_80%_20%,rgba(83,119,255,0.22),transparent_35%),linear-gradient(145deg,#0c1a2e,#09111d)] ${
+        className={`relative overflow-hidden rounded-[30px] border border-line bg-[radial-gradient(circle_at_80%_20%,rgba(83,119,255,0.22),transparent_35%),linear-gradient(145deg,var(--t-cta-from),var(--t-cta-to))] ${
           large ? 'min-h-[380px] sm:min-h-[440px] lg:min-h-[470px]' : 'min-h-[210px] sm:min-h-[226px]'
         }`}
       >
@@ -42,7 +42,7 @@ function ProjectCard({ eyebrow, title, meta, size }: ProjectCardProps) {
 
         <div className="absolute bottom-5 left-5 z-4 sm:bottom-6 sm:left-7">
           {eyebrow ? (
-            <Eyebrow className="mb-2 bg-[#081321]/80 backdrop-blur-md">{eyebrow}</Eyebrow>
+            <Eyebrow className="mb-2 bg-surface-2/80 backdrop-blur-md">{eyebrow}</Eyebrow>
           ) : null}
           <h3 className="mt-2 mb-1.5 text-[24px] sm:text-[31px]">{title}</h3>
           <p className="m-0 text-[16px] text-paper-2">{meta}</p>
