@@ -77,6 +77,9 @@
   --t-cta-to: #09111e;
   /* Gradient-text start colour. */
   --t-grad-ink: #ffffff;
+  /* Process-flow connector. Brand cyan -> violet on the dark background. */
+  --t-flow-from: var(--color-cyan);
+  --t-flow-to: var(--color-violet);
 }
 
 /* --------------------------------------------------------------------------
@@ -127,6 +130,9 @@
   --t-cta-from: #ffffff;
   --t-cta-to: #f2f6fc;
   --t-grad-ink: #0f1b2d;
+  /* Deeper cyan/violet: the pure brand tints are too pale to read on white. */
+  --t-flow-from: #0891b2;
+  --t-flow-to: #6d28d9;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -5,17 +5,19 @@ import { ButtonLink } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Section } from '@/components/ui/Section';
-import { Reveal } from '@/components/motion/Reveal';
 import { CTA } from '@/components/sections/CTA';
 import { ProcessSection } from '@/components/sections/ProcessSection';
+import { ServicesCapabilities } from '@/components/sections/ServicesCapabilities';
+import { ServicesDeliverables } from '@/components/sections/ServicesDeliverables';
 import { ServicesGrid } from '@/components/sections/ServicesGrid';
 import { ServicesHero } from '@/components/sections/ServicesHero';
 import { ServicesStrengths } from '@/components/sections/ServicesStrengths';
+import { ServicesTech } from '@/components/sections/ServicesTech';
 import { ServicesWork } from '@/components/sections/ServicesWork';
 import {
   SERVICES_CTA,
-  SERVICES_FEATURED_PROJECT_IDS,
-  SERVICES_INTRO,
+  SERVICES_FEATURED_PROJECT_ID,
+  SERVICES_SUPPORTING_PROJECT_IDS,
   SERVICES_PROCESS,
   fetchServicesFromApi,
 } from '@/lib/services';
@@ -101,11 +103,20 @@ function ServicesEmpty() {
 /*  Page                                                                      */
 /* -------------------------------------------------------------------------- */
 
-/** Pick the curated projects, skipping any id the CMS no longer returns. */
-function selectFeaturedProjects(all: readonly Project[]): Project[] {
-  return SERVICES_FEATURED_PROJECT_IDS.map((id) => all.find((p) => p.id === id)).filter(
-    (p): p is Project => p !== undefined,
+/**
+ * Featured / supporting split for Selected Work.
+ *
+ * Ids are resolved against the projects already fetched from the CMS, so a removed project
+ * is skipped rather than rendered as an empty card. `featured` is Garirhat — a real
+ * marketplace build with a working live URL; the supporting cards sit either side of it.
+ */
+function selectWork(all: readonly Project[]): { featured: Project | null; supporting: Project[] } {
+  const byId = (id: number) => all.find((p) => p.id === id) ?? null;
+  const featured = byId(SERVICES_FEATURED_PROJECT_ID);
+  const supporting = SERVICES_SUPPORTING_PROJECT_IDS.map(byId).filter(
+    (p): p is Project => p !== null,
   );
+  return { featured, supporting };
 }
 
 export default async function ServicesPage() {
@@ -122,9 +133,12 @@ export default async function ServicesPage() {
   if (services.length === 0) return <ServicesEmpty />;
 
   // Selected work is supporting content: a failure here must not take the page down.
-  let featured: Project[] = [];
+  let work: { featured: Project | null; supporting: Project[] } = {
+    featured: null,
+    supporting: [],
+  };
   try {
-    featured = selectFeaturedProjects(await fetchProjectsFromApi());
+    work = selectWork(await fetchProjectsFromApi());
   } catch (error) {
     console.error('[services] selected work fetch failed', {
       message: error instanceof Error ? error.message : 'unknown error',
@@ -135,48 +149,17 @@ export default async function ServicesPage() {
     <>
       <ServicesHero />
 
-      {/* ------------------------------------------------------- Introduction */}
-      <Section labelledBy="services-intro-heading">
-        <Container>
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
-            <div>
-              <Reveal>
-                <Eyebrow>{SERVICES_INTRO.eyebrow}</Eyebrow>
-              </Reveal>
-              <Reveal delay={0.06}>
-                <h2
-                  id="services-intro-heading"
-                  className="mt-5 mb-0 text-[clamp(30px,5vw,56px)] leading-[1.02] tracking-[-0.05em]"
-                >
-                  {SERVICES_INTRO.title}
-                </h2>
-              </Reveal>
-            </div>
+      {/* ---------------------------------------- Engineering capabilities */}
+      <ServicesCapabilities services={services} />
 
-            <Reveal delay={0.1}>
-              <div>
-                <p className="mt-0 mb-6 text-[18px] leading-[1.65] text-muted">
-                  {SERVICES_INTRO.lead}
-                </p>
-                <ul className="m-0 grid list-none gap-3.5 p-0">
-                  {SERVICES_INTRO.points.map((point) => (
-                    <li key={point} className="flex items-start gap-3 text-[16px] leading-[1.6]">
-                      <span
-                        aria-hidden="true"
-                        className="mt-2 size-1.5 shrink-0 rounded-full bg-cyan shadow-[0_0_12px_var(--color-cyan)]"
-                      />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-          </div>
-        </Container>
-      </Section>
-
-      {/* --------------------------------------------- Service catalogue */}
+      {/* --------------------------------------------- Detailed services */}
       <ServicesGrid services={services} />
+
+      {/* ------------------------------------------------------ Technologies */}
+      <ServicesTech />
+
+      {/* ------------------------------------------------------ What you get */}
+      <ServicesDeliverables />
 
       {/* --------------------------------------------------- Why KaralaSoft */}
       <ServicesStrengths />
@@ -188,10 +171,11 @@ export default async function ServicesPage() {
         description={SERVICES_PROCESS.description}
         steps={SERVICES_PROCESS.steps as readonly ProcessStep[]}
         alt={false}
+        variant="flow"
       />
 
       {/* --------------------------------------------------- Selected work */}
-      {featured.length > 0 ? <ServicesWork projects={featured} /> : null}
+      <ServicesWork featured={work.featured} supporting={work.supporting} />
 
       {/* --------------------------------------------------------------- CTA */}
       <Section alt labelledBy="services-cta-heading">

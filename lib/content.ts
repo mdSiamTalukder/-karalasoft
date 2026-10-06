@@ -10,16 +10,62 @@ import {
   Zap,
 } from 'lucide-react';
 
-import type { MarqueeItem, Metric, ProcessStep, ProductCard, ShowcaseGrid, ServiceCard, TechItem } from './types';
+import type { MarqueeItem, ProcessStep, ProductCard, ShowcaseGrid, ServiceCard, TechItem } from './types';
 
 /* -------------------------------------------------------------------------- */
 /*  Hero                                                                      */
 /* -------------------------------------------------------------------------- */
 
-export const heroMetrics: readonly Metric[] = [
-  { value: '50+', label: 'Projects delivered' },
-  { value: '12+', label: 'Countries served' },
-  { value: '5+ yrs', label: 'Product engineering' },
+/**
+ * Home hero — capability strip.
+ *
+ * Replaces the previous `heroMetrics` list ("50+ projects delivered", "12+ countries
+ * served", "5+ yrs"). Those were hard-coded figures with no data source behind them, so
+ * they are removed rather than repeated: everything shown on the site now traces back to
+ * the CMS or to the content in this file.
+ */
+export const heroCapabilities: readonly { readonly label: string; readonly iconKey: string }[] = [
+  { label: 'Full-Stack Engineering', iconKey: 'Code2' },
+  { label: 'AI & Automation', iconKey: 'Sparkles' },
+  { label: 'Web & Mobile', iconKey: 'Globe' },
+  { label: 'Cloud & APIs', iconKey: 'Plug' },
+];
+
+/**
+ * Home tech stack — the existing `techStack` names grouped for scanning.
+ *
+ * `items` only *references* names that already exist in `techStack`; `TechStack` resolves
+ * each group against that list, so a typo cannot introduce a technology the site does not
+ * already claim.
+ */
+export const techGroups: readonly {
+  readonly label: string;
+  readonly items: readonly string[];
+}[] = [
+  {
+    label: 'Frontend',
+    items: ['React', 'Next.js', 'TypeScript', 'Vue', 'Angular'],
+  },
+  {
+    label: 'Backend',
+    items: ['Node.js', 'Python', 'Go', 'Java', '.NET'],
+  },
+  {
+    label: 'Mobile',
+    items: ['Flutter', 'React Native', 'Swift', 'Kotlin'],
+  },
+  {
+    label: 'Database',
+    items: ['PostgreSQL', 'MongoDB', 'Redis'],
+  },
+  {
+    label: 'Cloud & DevOps',
+    items: ['AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes'],
+  },
+  {
+    label: 'AI',
+    items: ['OpenAI', 'PyTorch'],
+  },
 ];
 
 export const rotatingWords: readonly string[] = [

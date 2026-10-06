@@ -2,8 +2,18 @@ import { Container } from '@/components/ui/Container';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { GradientText } from '@/components/ui/GradientText';
 import { ButtonLink } from '@/components/ui/Button';
+import { Reveal } from '@/components/motion/Reveal';
 import { HeroVisual } from '@/components/sections/HeroVisual';
-import { heroMetrics } from '@/lib/content';
+import { heroCapabilities } from '@/lib/content';
+import { Code2, Globe, Plug, Sparkles } from 'lucide-react';
+
+/** Capability-strip icons, keyed by the `iconKey` in `heroCapabilities`. */
+const capabilityIcons: Record<string, typeof Sparkles> = {
+  Code2,
+  Sparkles,
+  Globe,
+  Plug,
+};
 
 export function Hero() {
   return (
@@ -37,17 +47,19 @@ export function Hero() {
             </ButtonLink>
           </div>
 
-          <dl className="mt-8 flex flex-wrap gap-x-8 gap-y-5 max-sm:gap-x-5 lg:mt-10 lg:gap-x-[34px]">
-            {heroMetrics.map((metric) => (
-              <div key={metric.label} className="min-w-[96px]">
-                <dt className="sr-only">{metric.label}</dt>
-                <dd className="m-0">
-                  <strong className="block text-[26px]">{metric.value}</strong>
-                  <span className="text-[13px] text-muted">{metric.label}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <ul className="mt-8 flex flex-wrap gap-2.5 p-0 lg:mt-10">
+            {heroCapabilities.map((capability) => {
+              const Icon = capabilityIcons[capability.iconKey] ?? Sparkles;
+              return (
+                <Reveal as="li" key={capability.label} className="m-0">
+                  <span className="inline-flex items-center gap-2.5 rounded-[14px] border border-line bg-veil/[0.035] px-4 py-3 text-[15px] text-paper-2 transition-colors duration-300 hover:border-cyan/30 hover:text-on-surface">
+                    <Icon aria-hidden="true" className="size-[18px] text-cyan" strokeWidth={1.6} />
+                    {capability.label}
+                  </span>
+                </Reveal>
+              );
+            })}
+          </ul>
         </div>
 
         <HeroVisual />

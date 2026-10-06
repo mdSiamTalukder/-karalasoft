@@ -27,14 +27,20 @@
 
 import {
   Building2,
+  CloudCog,
   Code2,
   Database,
   Globe,
+  Grid2x2,
   Headphones,
+  Layers,
+  Lock,
   Monitor,
+  Network,
   Plug,
   RefreshCcw,
   Rocket,
+  Shield,
   Smartphone,
   Sparkles,
   Users,
@@ -97,6 +103,29 @@ function serviceIconKey(icon: unknown): string {
  */
 export function getServiceIcon(iconKey: string): LucideIcon {
   return SERVICE_ICONS[iconKey] ?? Sparkles;
+}
+
+/**
+ * Extended icon set used by the /services sections (architecture diagram, capability
+ * groups, deliverables). These are generic engineering glyphs, not technology claims.
+ * Unknown keys fall back to `Sparkles` so a typo degrades instead of breaking the page.
+ */
+const SERVICES_UI_ICONS: Readonly<Record<string, LucideIcon>> = {
+  ...SERVICE_ICONS,
+  CloudCog,
+  Code2,
+  Grid2x2,
+  Headphones,
+  Layers,
+  Lock,
+  Monitor,
+  Network,
+  Shield,
+  Sparkles,
+};
+
+export function serviceIcon(iconKey: string): LucideIcon {
+  return SERVICES_UI_ICONS[iconKey] ?? Sparkles;
 }
 
 /** Coerce one untrusted record into a `Service`, or `null` if unusable. */
@@ -170,8 +199,8 @@ export async function fetchServicesFromApi(): Promise<Service[]> {
 /** Hero, matching the reference page's wording. */
 export const SERVICES_HERO = {
   eyebrow: 'What we do',
-  title: 'Our',
-  highlight: 'Services',
+  title: 'Engineering that holds up',
+  highlight: 'in production.',
   lead: 'End-to-end software solutions tailored to your vision. We combine technical expertise with strategic thinking to deliver products that scale.',
 } as const;
 
@@ -251,18 +280,23 @@ export const SERVICES_CTA = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Curated “selected work” selection, referenced by CMS project id and resolved against the
+ * “Selected work” selection, referenced by CMS project id and resolved against the
  * projects already fetched by `lib/projects.ts` — no project content is duplicated here.
  *
- * These four are chosen because they map directly onto the service catalogue (business
- * systems, enterprise platform, web platform, marketplace) and their cover images are
- * served correctly by the public host. IDs that no longer exist in the CMS are skipped
- * rather than breaking the section.
+ * One larger featured project plus supporting cards:
+ *   • Garirhat (1) — a real marketplace build with a working live URL.
+ *   • Finance Management System (4) and Hotel Management System (6) — a business system and
+ *     an enterprise platform, which is what the catalogue above describes.
  *
- * Note: “POS System with Admin” (id 12) is deliberately not listed — its `image_url` is an
+ * Ids that no longer exist in the CMS are skipped rather than breaking the section.
+ *
+ * Note: “POS System with Admin” (12) is deliberately excluded — its `image_url` is an
  * `/uploads/*` path that only resolves on the admin host, so its preview 404s publicly.
+ * “E-Commerce Platform” (5) is excluded because its curated `live_link` resolves to an
+ * ad-tracking URL rather than a real destination.
  */
-export const SERVICES_FEATURED_PROJECT_IDS: readonly number[] = [4, 6, 5, 1];
+export const SERVICES_FEATURED_PROJECT_ID = 1;
+export const SERVICES_SUPPORTING_PROJECT_IDS: readonly number[] = [4, 6];
 
 /* -------------------------------------------------------------------------- */
 /*  Process                                                                  */
@@ -323,3 +357,153 @@ export const SERVICES_PROCESS = {
     },
   ],
 } as const;
+
+/* -------------------------------------------------------------------------- */
+/*  Capability grouping                                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Services grouped into four engineering categories.
+ *
+ * `titles` reference service titles that already exist in the CMS — nothing here
+ * introduces a service the catalogue does not publish. `ServicesCapabilities` resolves
+ * each title against the fetched services, so a title that no longer exists is skipped
+ * rather than rendered as an empty row, and an ungrouped service is appended to a
+ * catch-all group so the grid can never silently drop a service.
+ *
+ * Note: "Cloud / DevOps" is deliberately absent — it is not a published service.
+ */
+export interface ServiceGroup {
+  readonly key: string;
+  readonly label: string;
+  readonly summary: string;
+  readonly iconKey: string;
+  readonly titles: readonly string[];
+}
+
+export const SERVICE_GROUPS: readonly ServiceGroup[] = [
+  {
+    key: 'product',
+    label: 'Product Engineering',
+    summary: 'Discovery through release — interface, application and first version.',
+    iconKey: 'Layers',
+    titles: ['Software Development', 'Web Development', 'Mobile Development', 'MVP Development'],
+  },
+  {
+    key: 'infrastructure',
+    label: 'Engineering & Infrastructure',
+    summary: 'The systems a product runs on: APIs, data, clients and migrations.',
+    iconKey: 'Server',
+    titles: [
+      'API Development',
+      'Database Development',
+      'Desktop Development',
+      'Software Modernization',
+    ],
+  },
+  {
+    key: 'delivery',
+    label: 'Delivery & Team',
+    summary: 'Capacity that plugs into your roadmap without slowing it down.',
+    iconKey: 'Users',
+    titles: ['IT Staff Augmentation', 'IT Outsourcing'],
+  },
+  {
+    key: 'longterm',
+    label: 'Long-Term Engineering',
+    summary: 'Keeping what we shipped healthy after it goes live.',
+    iconKey: 'Shield',
+    titles: ['IT Support', 'Application Maintenance'],
+  },
+];
+
+/** Group used for any published service not named in a category above. */
+export const UNCATEGORISED_GROUP: Omit<ServiceGroup, 'titles'> & { titles: readonly string[] } = {
+  key: 'other',
+  label: 'Additional Services',
+  summary: 'Other engineering practices from the catalogue.',
+  iconKey: 'Grid2x2',
+  titles: [],
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Deliverables — "What you get"                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Practical engineering outcomes. Every item maps to a capability the CMS services
+ * already publish (QA & testing, CI/CD, OpenAPI documentation, rate limiting, data
+ * migration, backup planning, cloud-native transformation, monitoring and incident
+ * response), so no new promise is introduced here.
+ */
+export interface ServiceDeliverable {
+  readonly iconKey: string;
+  readonly title: string;
+  readonly description: string;
+}
+
+export const SERVICE_DELIVERABLES: readonly ServiceDeliverable[] = [
+  {
+    iconKey: 'Code2',
+    title: 'Production-ready code',
+    description: 'Documented, reviewed and structured so another engineer can own it.',
+  },
+  {
+    iconKey: 'Shield',
+    title: 'Quality assurance & testing',
+    description: 'Functional, integration and performance testing before release.',
+  },
+  {
+    iconKey: 'Rocket',
+    title: 'CI/CD delivery',
+    description: 'Automated integration and deployment you can roll back.',
+  },
+  {
+    iconKey: 'Plug',
+    title: 'Documented APIs',
+    description: 'RESTful and GraphQL contracts delivered with OpenAPI documentation.',
+  },
+  {
+    iconKey: 'Lock',
+    title: 'Rate limiting & security',
+    description: 'Throttling, access control and hardening applied at the boundary.',
+  },
+  {
+    iconKey: 'Database',
+    title: 'Database design & migration',
+    description: 'Schema design, performance tuning and safe data migration.',
+  },
+  {
+    iconKey: 'CloudCog',
+    title: 'Cloud-native transformation',
+    description: 'Microservices and containerised deployment on AWS, Azure or GCP.',
+  },
+  {
+    iconKey: 'Headphones',
+    title: 'Monitoring & incident response',
+    description: 'System monitoring and a defined path for handling incidents.',
+  },
+];
+
+/* -------------------------------------------------------------------------- */
+/*  Architecture visual — hero right                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The stack diagram shown beside the hero. These are engineering *layers*, not services
+ * or products, and each icon is a generic Lucide glyph rather than a technology claim.
+ */
+export interface ArchitectureLayer {
+  readonly iconKey: string;
+  readonly label: string;
+  readonly detail: string;
+}
+
+export const ARCHITECTURE_LAYERS: readonly ArchitectureLayer[] = [
+  { iconKey: 'Monitor', label: 'Frontend', detail: 'Responsive interfaces' },
+  { iconKey: 'Plug', label: 'API', detail: 'REST · GraphQL · WebSocket' },
+  { iconKey: 'Server', label: 'Backend', detail: 'Business logic & auth' },
+  { iconKey: 'Database', label: 'Database', detail: 'SQL · NoSQL' },
+  { iconKey: 'Network', label: 'Integrations', detail: 'Payments · email · AI' },
+  { iconKey: 'CloudCog', label: 'Cloud', detail: 'Containerised deployment' },
+];
