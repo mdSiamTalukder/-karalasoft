@@ -5,6 +5,7 @@ import './globals.css';
 import { siteConfig } from '@/lib/site';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { PublicChrome } from '@/components/layout/PublicChrome';
 import { ScrollProgress } from '@/components/motion/ScrollProgress';
 import { CursorGlow } from '@/components/motion/CursorGlow';
 
@@ -68,16 +69,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
 
-        <ScrollProgress />
-        <CursorGlow />
-        <Navbar />
-
-        {/* `pageIn` recreates the route-change fade used by the original SPA shell. */}
-        <main id="main" className="[animation:pageIn_0.4s_ease]">
-          {children}
-        </main>
-
-        <Footer />
+        {/*
+          Public marketing chrome is suppressed under /admin so the panel stands alone.
+          `children` is threaded *through* PublicChrome (not rendered beside it) so the
+          page content always sits between the navbar and the footer.
+        */}
+        <PublicChrome
+          header={
+            <>
+              <ScrollProgress />
+              <CursorGlow />
+              <Navbar />
+            </>
+          }
+          footer={<Footer />}
+        >
+          {/* `pageIn` recreates the route-change fade used by the original SPA shell. */}
+          <main id="main" className="[animation:pageIn_0.4s_ease]">
+            {children}
+          </main>
+        </PublicChrome>
       </body>
     </html>
   );

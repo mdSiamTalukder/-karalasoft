@@ -1,61 +1,144 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
-import { PageHero } from '@/components/sections/PageHero';
-import { Card } from '@/components/ui/Card';
+import { fetchProductsFromApi } from '@/lib/products';
+import { ProductsShowcase } from '@/components/sections/ProductsShowcase';
+import { ButtonLink } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { IconBadge } from '@/components/ui/IconBadge';
 import { Section } from '@/components/ui/Section';
-import { productCards } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: 'Products',
   description:
-    'SaaS platforms, business systems, AI-enabled tools and mobile products engineered by KaralaSoft.',
+    'Explore the KaralaSoft product suite: HRM and Point of Sale platforms with AI-powered face recognition, geo-fenced attendance, dashboards and role-based access.',
   alternates: { canonical: '/products' },
   openGraph: {
     title: 'Products | KaralaSoft',
     description:
-      'SaaS platforms, business systems, AI-enabled tools and mobile products engineered by KaralaSoft.',
+      'Explore the KaralaSoft product suite: HRM and Point of Sale platforms with AI-powered face recognition, geo-fenced attendance, dashboards and role-based access.',
     url: '/products',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Products | KaralaSoft',
+    description:
+      'Explore the KaralaSoft product suite: HRM and Point of Sale platforms with AI-powered face recognition, geo-fenced attendance, dashboards and role-based access.',
   },
 };
 
-export default function ProductsPage() {
+/** Re-read the CMS at most once an hour, matching the rest of the public data layer. */
+export const revalidate = 3600;
+
+/* -------------------------------------------------------------------------- */
+/*  Fallback states                                                           */
+/*  Both are rendered on the server, so a CMS outage still produces a real page     */
+/*  rather than a blank shell.                                                    */
+/* -------------------------------------------------------------------------- */
+
+function ProductsError() {
+  return (
+    <Section>
+      <Container>
+        <div
+          role="alert"
+          className="relative overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-12 text-center sm:px-10"
+        >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-[90px] -right-[90px] size-[180px] rounded-full bg-[radial-gradient(circle,rgba(88,236,255,0.12),transparent_70%)]"
+          />
+          <Eyebrow className="mb-5">Temporarily unavailable</Eyebrow>
+          <h1 className="m-0 mb-4 text-[clamp(30px,5vw,56px)] leading-none tracking-[-0.05em]">
+            The product suite is offline for a moment
+          </h1>
+          <p className="mx-auto mb-8 max-w-[54ch] text-[18px] text-muted">
+            We could not reach the product catalogue just now. Everything else on the site is
+            unaffected — or get in touch and we will demo it for you directly.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <ButtonLink href="/contact" variant="primary">
+              Contact us
+            </ButtonLink>
+            <ButtonLink href="/projects">See our work</ButtonLink>
+          </div>
+        </div>
+      </Container>
+    </Section>
+  );
+}
+
+function ProductsEmpty() {
+  return (
+    <Section>
+      <Container>
+        <div className="relative overflow-hidden rounded-[26px] border border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-6 py-12 text-center sm:px-10">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-[90px] -right-[90px] size-[180px] rounded-full bg-[radial-gradient(circle,rgba(88,236,255,0.12),transparent_70%)]"
+          />
+          <Eyebrow className="mb-5">Products</Eyebrow>
+          <h1 className="m-0 mb-4 text-[clamp(30px,5vw,56px)] leading-none tracking-[-0.05em]">
+            No products published yet
+          </h1>
+          <p className="mx-auto mb-8 max-w-[54ch] text-[18px] text-muted">
+            The suite is being prepared. In the meantime, browse the work we have already shipped
+            or tell us what you need built.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <ButtonLink href="/projects" variant="primary">
+              See our work
+            </ButtonLink>
+            <ButtonLink href="/contact">Contact us</ButtonLink>
+          </div>
+        </div>
+      </Container>
+    </Section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Page                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The suite is fetched on the server (straight from the public CMS, the same call
+ * `/api/products` makes for the browser) so the complete content is in the initial HTML
+ * for search engines and for visitors with JavaScript disabled. The client component
+ * then only owns the "which product is selected" interaction.
+ */
+export default async function ProductsPage() {
+  let products;
+  try {
+    products = await fetchProductsFromApi();
+  } catch (error) {
+    console.error('[products] page fetch failed', {
+      message: error instanceof Error ? error.message : 'unknown error',
+    });
+    return <ProductsError />;
+  }
+
+  if (products.length === 0) return <ProductsEmpty />;
+
   return (
     <>
-      <PageHero
-        eyebrow="Products"
-        headingId="products-page-heading"
-        title="Turn your product portfolio into a"
-        highlight="visual showroom."
-        lead="Use motion, device mockups and short benefit statements so visitors can understand each product in seconds."
-      />
-
-      <Section labelledBy="products-page-grid">
+      <ProductsShowcase products={products} />
+      <Section labelledBy="products-more-heading">
         <Container>
-          <h2 id="products-page-grid" className="sr-only">
-            Product categories
-          </h2>
-
-          {/* `.bento` — the feature card spans both columns. */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-[18px]">
-            <Card className="sm:col-span-2 sm:min-h-[260px]">
-              <Eyebrow>Product Experience</Eyebrow>
-              <h2 className="my-5 mb-3 text-[clamp(32px,6vw,48px)] leading-none">Show the product in motion.</h2>
-              <p className="lead">
-                Animate dashboards, mobile screens, workflow steps and live metrics. Each product card
-                should have one striking visual, one clear promise and one direct action.
-              </p>
-            </Card>
-
-            {productCards.map((product, index) => (
-              <Card key={product.title} delay={(index % 2) * 0.08}>
-                <IconBadge glyph={product.glyph} label={product.title} />
-                <h3 className="mt-5 mb-2 text-[22px]">{product.title}</h3>
-                <p className="m-0 text-muted">{product.description}</p>
-              </Card>
-            ))}
+          <div className="flex flex-col items-center gap-5 text-center">
+            <h2 id="products-more-heading" className="m-0 text-[22px] leading-snug">
+              Want the detail behind these products?
+            </h2>
+            <p className="mx-auto m-0 max-w-[54ch] text-[17px] text-muted">
+              The case studies show the decisions, constraints and outcomes behind systems like
+              these.
+            </p>
+            <Link
+              href="/projects"
+              className="text-[16px] font-semibold text-cyan underline-offset-4 hover:underline"
+            >
+              Read the case studies
+            </Link>
           </div>
         </Container>
       </Section>
