@@ -12,6 +12,8 @@ import {
   Smartphone,
 } from 'lucide-react';
 
+import { SERVICE_GROUPS } from './services';
+
 import type { ContactChannel, CoreValue } from './types';
 
 /* -------------------------------------------------------------------------- */
@@ -100,14 +102,24 @@ export const coreValues: readonly CoreValue[] = [
 /*  Contact                                                                   */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Placeholder entry for the contact form's service select.
+ *
+ * The rest of the list is DERIVED from `SERVICE_GROUPS` in `lib/services.ts` rather than
+ * retyped here, so the options offered on the contact form can only ever be services the
+ * site actually documents. Adding a service to the catalogue updates this list with it.
+ *
+ * `AI / Machine Learning` is included because AI work is already claimed elsewhere in the
+ * repository — `siteConfig.description` ("AI-enabled platforms"), the services
+ * integrations list ("Payments · email · AI") and the published "AI Chat Bot" project.
+ *
+ * The `need` field is validated server-side as a plain string (no enum), so these labels
+ * are presentation only and the API contract is unaffected.
+ */
 export const projectNeeds: readonly string[] = [
   'What do you need?',
-  'Software Development',
-  'MVP Development',
-  'Web Development',
-  'Mobile Development',
-  'API Development',
-  'IT Staff Augmentation',
+  ...SERVICE_GROUPS.flatMap((group) => group.titles),
+  'AI / Machine Learning',
 ];
 
 export const contactChannels: readonly ContactChannel[] = [

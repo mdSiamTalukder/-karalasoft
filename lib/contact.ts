@@ -18,7 +18,12 @@ export const CONTACT_ENDPOINT = '/api/contact';
 /** Kept in step with the server schema so messages match before a round trip. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const NAME_MIN = 2;
-const MESSAGE_MIN = 20;
+
+/**
+ * Exported so the form's live character counter reads the same constant the validation
+ * enforces, rather than duplicating the number in the UI.
+ */
+export const MESSAGE_MIN = 20;
 
 export const emptyContactValues: ContactValues = {
   name: '',

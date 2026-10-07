@@ -8,9 +8,11 @@ import { projectNeeds } from '@/lib/about';
 import {
   emptyContactValues,
   hasErrors,
+  MESSAGE_MIN,
   submitContactBrief,
   validateContactValues,
 } from '@/lib/contact';
+import { CONTACT_MESSAGE_HINT } from '@/lib/contact-page';
 import type { ContactErrors, ContactStatus, ContactValues } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 
@@ -77,6 +79,13 @@ export function ContactForm() {
 
   const submitting = status === 'submitting';
 
+  /**
+   * Live count for the brief field. Read from the same `MESSAGE_MIN` constant that
+   * `validateContactValues` enforces, so the counter can never disagree with validation.
+   */
+  const messageLength = values.message.trim().length;
+  const messageTooShort = messageLength > 0 && messageLength < MESSAGE_MIN;
+
   function setField(name: keyof ContactValues, value: string) {
     setValues((previous) => ({ ...previous, [name]: value }));
     if (errors[name]) {
@@ -141,7 +150,7 @@ export function ContactForm() {
       ref={formRef}
       onSubmit={handleSubmit}
       noValidate
-      className="relative grid gap-3"
+      className="relative grid gap-4"
     >
       <Field id={fieldId('name')} label="Your name" error={errors.name}>
         <input
@@ -216,20 +225,39 @@ export function ContactForm() {
         id={fieldId('message')}
         label="Project brief"
         error={errors.message}
-        hint="At least 20 characters — goals, users, timeline."
+        hint={CONTACT_MESSAGE_HINT}
       >
         <textarea
           id={fieldId('message')}
           name="message"
-          rows={6}
+          rows={7}
           required
-          className={`${inputClass} min-h-[150px] resize-y`}
-          placeholder="What are you trying to build?"
+          className={`${inputClass} min-h-[170px] resize-y`}
+          placeholder="What are you building, who is it for, and what should it do?"
           value={values.message}
           onChange={(event) => setField('message', event.target.value)}
           aria-invalid={Boolean(errors.message)}
-          aria-describedby={errors.message ? `${fieldId('message')}-error` : `${fieldId('message')}-hint`}
+          aria-describedby={
+            errors.message ? `${fieldId('message')}-error` : `${fieldId('message')}-hint`
+          }
         />
+
+        {/*
+          Character counter. `aria-live="polite"` so the count is announced as the visitor
+          types, and it stays a plain readout — it never blocks or replaces the validation
+          message shown above it.
+        */}
+        <p
+          aria-live="polite"
+          className={`mt-1.5 text-right text-[12px] tabular-nums ${
+            messageTooShort ? 'text-muted-soft' : 'text-muted'
+          }`}
+        >
+          {messageLength} {messageLength === 1 ? 'character' : 'characters'}
+          {messageTooShort ? (
+            <span className="text-muted-soft"> · {MESSAGE_MIN} minimum</span>
+          ) : null}
+        </p>
       </Field>
 
       {/*
