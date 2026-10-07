@@ -17,11 +17,18 @@ import { fetchProjects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
 import { Reveal } from '@/components/motion/Reveal';
 import { Button } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { FeaturedProject } from '@/components/sections/FeaturedProject';
+import { ProjectCapabilities } from '@/components/sections/ProjectCapabilities';
+import { ProjectsArchiveHeading } from '@/components/sections/ProjectsArchiveHeading';
 
 type Status = 'loading' | 'ready' | 'error' | 'empty';
 
 /** Sentinel for "no category filter applied" — never collides with a real category. */
 const ALL_CATEGORIES = '__all__';
+
+/** Technology pills shown on a card; the rest collapse into "+N". */
+const TAG_LIMIT = 4;
 
 /* --------------------------------------------------------------- image fallback */
 
@@ -53,7 +60,16 @@ function ImageFallback() {
  * The whole card is one link, but ONLY when the API supplied a real `live_link`.
  * Projects without one render as a plain card — we never invent a destination.
  */
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({
+  project,
+  index,
+  ordinal,
+}: {
+  project: Project;
+  index: number;
+  /** Editorial number in the full CMS order, e.g. "03". */
+  ordinal: string;
+}) {
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(project.imageUrl) && !imageFailed;
 
@@ -119,7 +135,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 
         {project.tags.length > 0 ? (
           <ul className="m-0 mt-3 flex list-none flex-wrap gap-1.5 p-0">
-            {project.tags.map((tag) => (
+            {project.tags.slice(0, TAG_LIMIT).map((tag) => (
               <li
                 key={tag}
                 className="rounded-full border border-line bg-[#0d1b2b]/70 px-2.5 py-1 text-[11px] text-paper-5 backdrop-blur-sm"
@@ -127,8 +143,21 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                 {tag}
               </li>
             ))}
+            {project.tags.length > TAG_LIMIT ? (
+              <li className="rounded-full border border-line bg-[#0d1b2b]/70 px-2.5 py-1 text-[11px] text-muted-soft backdrop-blur-sm">
+                +{project.tags.length - TAG_LIMIT}
+              </li>
+            ) : null}
           </ul>
         ) : null}
+
+        {/* Editorial number — derived from the project's own position in the CMS order. */}
+        <span
+          aria-hidden="true"
+          className="absolute top-4 right-4 grid size-9 place-items-center rounded-[11px] border border-white/10 bg-[#0d1b2b]/70 text-[12px] font-semibold tracking-[0.06em] text-paper-5 tabular-nums backdrop-blur-sm"
+        >
+          {ordinal}
+        </span>
       </div>
     </>
   );
@@ -350,18 +379,29 @@ function Controls({
  * with explicit loading, error, empty and image-failure handling, plus client-side
  * search and category filtering over the already-fetched data.
  */
-export function ProjectsGrid() {
+export function ProjectsGrid({ initialProjects }: { initialProjects?: Project[] }) {
   const [attempt, setAttempt] = useState(0);
-  const [state, setState] = useState<{ status: Status; projects: Project[] }>({
-    status: 'loading',
-    projects: [],
-  });
+  const [state, setState] = useState<{ status: Status; projects: Project[] }>(() =>
+    initialProjects
+      ? { status: initialProjects.length === 0 ? 'empty' : 'ready', projects: initialProjects }
+      : { status: 'loading', projects: [] },
+  );
   const { status, projects } = state;
 
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORIES);
 
+  /**
+   * Only fetch from the browser when the server did not already supply the data.
+   *
+   * `initialProjects` is a fresh server fetch on every page load, so it is never stale by
+   * the time this effect first runs — and re-fetching would only replace identical content.
+   * If the server fetch failed, `initialProjects` is `undefined` and this effect takes over
+   * exactly as it did before, preserving the loading, error and retry states.
+   */
   useEffect(() => {
+    if (initialProjects) return;
+
     const controller = new AbortController();
     let active = true;
 
@@ -379,7 +419,7 @@ export function ProjectsGrid() {
       active = false;
       controller.abort();
     };
-  }, [attempt]);
+  }, [attempt, initialProjects]);
 
   const retry = useCallback(() => {
     setState({ status: 'loading', projects: [] });
@@ -390,6 +430,35 @@ export function ProjectsGrid() {
     setQuery('');
     setActiveCategory(ALL_CATEGORIES);
   }, []);
+
+  /**
+   * Distinct technologies across the whole portfolio.
+   *
+   * Compared case-insensitively because the CMS stores some entries as "Node.js" and
+   * others as "NODE.JS" — without this the headline would double-count the same stack.
+   */
+  const technologyCount = useMemo(() => {
+    const seen = new Set<string>();
+    for (const project of projects) {
+      for (const tag of project.tags) seen.add(tag.trim().toLowerCase());
+    }
+    return seen.size;
+  }, [projects]);
+
+  /**
+   * Editorial number for a card, taken from the project's position in the *full* CMS
+   * order rather than its position in the filtered result, so the numbering stays stable
+   * while the visitor searches or filters.
+   */
+  const ordinalOf = useCallback(
+    (project: Project) => {
+      const index = projects.findIndex(
+        (candidate) => candidate.id === project.id && candidate.title === project.title,
+      );
+      return String(index >= 0 ? index + 1 : 1).padStart(2, '0');
+    },
+    [projects],
+  );
 
   /** Unique categories taken from the fetched data only, in first-seen order. */
   const categories = useMemo(() => {
@@ -431,55 +500,120 @@ export function ProjectsGrid() {
               : `${visibleProjects.length} of ${projects.length} projects shown`}
       </p>
 
-      {status === 'loading' ? (
-        <ul
-          aria-hidden="true"
-          className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]"
-        >
-          {Array.from({ length: 6 }, (_, i) => (
-            <li key={i}>
-              <SkeletonCard />
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {/*
+        Loading, error and empty all keep the page's vertical rhythm and width. They share
+        one wrapper because they are mutually exclusive with the `ready` branch below.
+      */}
+      {status !== 'ready' ? (
+        <div className="pt-[72px] pb-[72px] sm:pt-20 sm:pb-20 lg:pt-[95px] lg:pb-[95px]">
+          <Container>
+            {status === 'loading' ? (
+              <ul
+                aria-hidden="true"
+                className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]"
+              >
+                {Array.from({ length: 6 }, (_, i) => (
+                  <li key={i}>
+                    <SkeletonCard />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
 
-      {status === 'error' ? <ErrorState onRetry={retry} /> : null}
-      {status === 'empty' ? <EmptyState /> : null}
+            {status === 'error' ? <ErrorState onRetry={retry} /> : null}
+            {status === 'empty' ? <EmptyState /> : null}
+          </Container>
+        </div>
+      ) : null}
 
       {status === 'ready' ? (
         <>
-          <Controls
-            query={query}
-            onQueryChange={setQuery}
-            categories={categories}
-            activeCategory={effectiveCategory}
-            onCategoryChange={setActiveCategory}
-            resultCount={visibleProjects.length}
-            totalCount={projects.length}
-          />
+          {/* ------------------------------------------- featured case study */}
+          <div className="pt-[72px] pb-[72px] sm:pt-20 sm:pb-20 lg:pt-[95px] lg:pb-[95px]">
+            <Container>
+              <Reveal>
+                <ul
+                  aria-label="Portfolio at a glance"
+                  className="m-0 flex list-none flex-wrap items-center gap-x-7 gap-y-3 border-b border-line pb-6 p-0"
+                >
+                  <li className="text-[14px] text-muted">
+                    <span className="bg-[linear-gradient(90deg,var(--t-grad-ink),var(--color-cyan))] bg-clip-text text-[22px] leading-none font-bold text-transparent">
+                      {String(projects.length).padStart(2, '0')}
+                    </span>{' '}
+                    {projects.length === 1 ? 'project' : 'projects'} published
+                  </li>
+                  <li className="text-[14px] text-muted">
+                    <span className="bg-[linear-gradient(90deg,var(--t-grad-ink),var(--color-cyan))] bg-clip-text text-[22px] leading-none font-bold text-transparent">
+                      {String(categories.length).padStart(2, '0')}
+                    </span>{' '}
+                    {categories.length === 1 ? 'category' : 'categories'} covered
+                  </li>
+                  <li className="text-[14px] text-muted">
+                    <span className="bg-[linear-gradient(90deg,var(--t-grad-ink),var(--color-cyan))] bg-clip-text text-[22px] leading-none font-bold text-transparent">
+                      {String(technologyCount).padStart(2, '0')}
+                    </span>{' '}
+                    {technologyCount === 1 ? 'technology' : 'technologies'} in use
+                  </li>
+                </ul>
+              </Reveal>
 
-          {visibleProjects.length === 0 ? (
-            <NoMatchesState onClear={clearFilters} />
-          ) : (
-            <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {visibleProjects.map((project, index) => (
-                  <motion.li
-                    key={project.id || project.title}
-                    layout
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
-                    className="h-full"
-                  >
-                    <ProjectCard project={project} index={index} />
-                  </motion.li>
-                ))}
-              </AnimatePresence>
-            </ul>
-          )}
+              <div className="mt-8 sm:mt-10">
+                <Reveal delay={0.06} direction="none">
+                  <FeaturedProject project={projects[0]!} />
+                </Reveal>
+              </div>
+            </Container>
+          </div>
+
+          {/* --------------------------------------------------- filterable archive */}
+          <ProjectsArchiveHeading total={projects.length} />
+
+          <Container>
+            <div className="mt-7 sm:mt-9">
+              <Controls
+                query={query}
+                onQueryChange={setQuery}
+                categories={categories}
+                activeCategory={effectiveCategory}
+                onCategoryChange={setActiveCategory}
+                resultCount={visibleProjects.length}
+                totalCount={projects.length}
+              />
+
+              {visibleProjects.length === 0 ? (
+                <NoMatchesState onClear={clearFilters} />
+              ) : (
+                <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]">
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    {visibleProjects.map((project, index) => (
+                      <motion.li
+                        key={project.id || project.title}
+                        layout
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ duration: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
+                        className="h-full"
+                      >
+                        <ProjectCard
+                          project={project}
+                          index={index}
+                          ordinal={ordinalOf(project)}
+                        />
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </ul>
+              )}
+            </div>
+          </Container>
+
+          {/* -------------------------------------------------- capability themes */}
+          <div className="mt-[72px] sm:mt-20 lg:mt-[95px]">
+            <Container>
+              <ProjectCapabilities projects={projects} />
+            </Container>
+          </div>
         </>
       ) : null}
     </div>

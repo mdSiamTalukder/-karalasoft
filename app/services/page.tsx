@@ -152,6 +152,9 @@ export default async function ServicesPage() {
       {/* ---------------------------------------- Engineering capabilities */}
       <ServicesCapabilities services={services} />
 
+      {/* --------------------------------------------------- Selected work */}
+      <ServicesWork featured={work.featured} supporting={work.supporting} />
+
       {/* --------------------------------------------- Detailed services */}
       <ServicesGrid services={services} />
 
@@ -173,9 +176,6 @@ export default async function ServicesPage() {
         alt={false}
         variant="flow"
       />
-
-      {/* --------------------------------------------------- Selected work */}
-      <ServicesWork featured={work.featured} supporting={work.supporting} />
 
       {/* --------------------------------------------------------------- CTA */}
       <Section alt labelledBy="services-cta-heading">

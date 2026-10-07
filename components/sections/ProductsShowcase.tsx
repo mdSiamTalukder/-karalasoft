@@ -53,69 +53,8 @@ export function ProductsShowcase({ products }: { products: readonly Product[] })
 
   if (!active) return null;
 
-  const heroEyebrow = products.length > 1 ? 'Featured product' : 'Product';
-
   return (
     <>
-      {/* ---------------------------------------------------------- Featured hero */}
-      <Section labelledBy="products-featured-heading">
-        <Container>
-          <div className="text-center">
-            <Reveal>
-              <Eyebrow className="mb-6" dot>
-                <Sparkles aria-hidden="true" className="size-4 text-cyan" />
-                {heroEyebrow}
-              </Eyebrow>
-            </Reveal>
-
-            <Reveal delay={0.06}>
-              <h1
-                id="products-featured-heading"
-                className="m-0 mb-6 text-[clamp(40px,8vw,84px)] leading-[0.95] tracking-[-0.06em]"
-              >
-                <GradientText>{active.name}</GradientText>
-              </h1>
-            </Reveal>
-
-            {active.tagline ? (
-              <Reveal delay={0.12}>
-                <p className="mx-auto mb-4 max-w-[760px] text-[clamp(19px,2.4vw,26px)] leading-[1.4] text-paper-2">
-                  {active.tagline}
-                </p>
-              </Reveal>
-            ) : null}
-
-            {active.description ? (
-              <Reveal delay={0.18}>
-                <p className="mx-auto mb-10 max-w-[680px] text-[17px] leading-[1.6] text-muted">
-                  {active.description}
-                </p>
-              </Reveal>
-            ) : null}
-
-            <Reveal delay={0.24}>
-              <div className="flex flex-wrap items-center justify-center gap-3.5">
-                {active.liveUrl ? (
-                  <ButtonLink
-                    href={active.liveUrl}
-                    variant="primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Check demo
-                    <ArrowUpRight
-                      aria-hidden="true"
-                      className="size-[18px] transition-transform duration-300 group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5"
-                    />
-                  </ButtonLink>
-                ) : null}
-                <ButtonLink href="/contact">Learn more</ButtonLink>
-              </div>
-            </Reveal>
-          </div>
-        </Container>
-      </Section>
-
       {/* --------------------------------------------------- Suite / selector grid */}
       {products.length > 1 ? (
         <Section labelledBy="products-suite-heading">

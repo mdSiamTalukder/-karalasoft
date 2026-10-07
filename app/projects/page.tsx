@@ -1,47 +1,49 @@
 import type { Metadata } from 'next';
 
-import { PageHero } from '@/components/sections/PageHero';
-import { Container } from '@/components/ui/Container';
-import { Section } from '@/components/ui/Section';
+import { ProjectsHero } from '@/components/sections/ProjectsHero';
 import { ProjectsGrid } from '@/components/sections/ProjectsGrid';
+import { ProjectCta } from '@/components/sections/ProjectCta';
+import { fetchProjectsFromApi } from '@/lib/projects';
+
+const DESCRIPTION =
+  'Real products designed, built and shipped by KaralaSoft — marketplaces, operational platforms, commerce, backend systems and applied AI.';
 
 export const metadata: Metadata = {
   title: 'Projects',
-  description:
-    'A showcase of solutions delivered by KaralaSoft across marketplaces, gaming, AI, finance, commerce, hospitality and enterprise systems.',
+  description: DESCRIPTION,
   alternates: { canonical: '/projects' },
   openGraph: {
     title: 'Projects | KaralaSoft',
-    description:
-      'A showcase of solutions delivered by KaralaSoft across marketplaces, gaming, AI, finance, commerce, hospitality and enterprise systems.',
+    description: DESCRIPTION,
     url: '/projects',
   },
 };
 
-export default function ProjectsPage() {
+/**
+ * The portfolio is read on the server so the case studies are present in the initial HTML
+ * and in the static output. `fetchProjectsFromApi()` already caches for an hour, which is
+ * what turns this route into ISR.
+ */
+export const revalidate = 3600;
+
+/**
+ * `/projects` is assembled entirely from projects-specific components.
+ *
+ * `ProjectsGrid` stays the single owner of the data and of the loading, error, empty and
+ * image-fallback states. It receives the server result as `initialProjects`; when that is
+ * unavailable it falls back to the original browser fetch through the same-origin
+ * `/api/projects` proxy, so no existing behaviour is lost.
+ */
+export default async function ProjectsPage() {
+  const projects = await fetchProjectsFromApi().catch(() => undefined);
+
   return (
     <>
-      <PageHero
-        eyebrow="Projects"
-        headingId="projects-page-heading"
-        title="Case studies should make clients think,"
-        highlight="“I want that team.”"
-        lead="Large product imagery, before/after context, stack, timeline and measurable impact make the work much more convincing than a simple logo grid."
-      />
+      <ProjectsHero />
 
-      <Section labelledBy="projects-page-grid">
-        <Container>
-          <h2 id="projects-page-grid" className="sr-only">
-            Selected projects
-          </h2>
+      <ProjectsGrid initialProjects={projects} />
 
-          <ProjectsGrid />
-
-          <p className="mt-3.5 mb-0 text-[13px] text-muted">
-            Projects marked with an arrow include a public link to the live build.
-          </p>
-        </Container>
-      </Section>
+      <ProjectCta />
     </>
   );
 }

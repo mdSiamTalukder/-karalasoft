@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { fetchProductsFromApi } from '@/lib/products';
+import { ProductsHero } from '@/components/sections/ProductsHero';
 import { ProductsShowcase } from '@/components/sections/ProductsShowcase';
+import { ProductOperations } from '@/components/sections/ProductOperations';
+import { ProductArchitecture } from '@/components/sections/ProductArchitecture';
+import { ProductValue } from '@/components/sections/ProductValue';
 import { ButtonLink } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -120,9 +124,23 @@ export default async function ProductsPage() {
 
   if (products.length === 0) return <ProductsEmpty />;
 
+  // The hero frames the first (lowest `order_index`) product; the suite below owns the
+  // switching interaction for every product.
+  const featured = products[0] ?? null;
+
   return (
     <>
+      <ProductsHero featured={featured} />
+
+      {/* Our products — switcher, key features, in-product preview, final CTA */}
       <ProductsShowcase products={products} />
+
+      <ProductOperations />
+
+      <ProductArchitecture />
+
+      <ProductValue />
+
       <Section labelledBy="products-more-heading">
         <Container>
           <div className="flex flex-col items-center gap-5 text-center">
