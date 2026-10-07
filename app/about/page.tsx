@@ -1,142 +1,94 @@
 import type { Metadata } from 'next';
 
-import { PageHero } from '@/components/sections/PageHero';
-import { CTA } from '@/components/sections/CTA';
+import { AboutHero } from '@/components/sections/AboutHero';
+import { AboutStats } from '@/components/sections/AboutStats';
+import { AboutWho } from '@/components/sections/AboutWho';
+import { AboutWhy } from '@/components/sections/AboutWhy';
+import { AboutStory } from '@/components/sections/AboutStory';
+import { AboutCapabilities } from '@/components/sections/AboutCapabilities';
+import { ProcessSection } from '@/components/sections/ProcessSection';
+import { AboutPrinciples } from '@/components/sections/AboutPrinciples';
+import { AboutWork } from '@/components/sections/AboutWork';
 import { TeamMembers } from '@/components/sections/TeamMembers';
-import { Card } from '@/components/ui/Card';
+import { AboutDelivery } from '@/components/sections/AboutDelivery';
+import { CTA } from '@/components/sections/CTA';
 import { Container } from '@/components/ui/Container';
-import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Section } from '@/components/ui/Section';
 import { SectionHead } from '@/components/ui/SectionHead';
-import {
-  aboutLead,
-  aboutLocationDescription,
-  aboutLocationTitle,
-  aboutStats,
-  aboutStory,
-  coreValues,
-  solutionAreas,
-  teamIntro,
-} from '@/lib/about';
+import { ABOUT_CTA, ABOUT_PROCESS } from '@/lib/about-page';
+import { teamIntro } from '@/lib/about';
+
+const DESCRIPTION =
+  'KaralaSoft is a software and product engineering company based in Dhaka, Bangladesh. Founded in 2020, we design, build and maintain web applications, mobile apps, desktop software and enterprise platforms.';
 
 export const metadata: Metadata = {
   title: 'About',
-  description:
-    'Founded in 2020, KaralaSoft is a dedicated team of engineers, designers and strategists delivering world-class software from Dhaka, Bangladesh to clients in 12+ countries.',
+  description: DESCRIPTION,
   alternates: { canonical: '/about' },
   openGraph: {
     title: 'About | KaralaSoft',
-    description:
-      'Founded in 2020, KaralaSoft is a dedicated team of engineers, designers and strategists delivering world-class software from Dhaka, Bangladesh to clients in 12+ countries.',
+    description: DESCRIPTION,
     url: '/about',
   },
 };
 
+/**
+ * Page order follows the agreed structure:
+ *
+ *   Hero → Stats → Who We Are → Why KaralaSoft → Our Story → What We Build →
+ *   How We Work → Our Principles → Selected Work → Team → Global Delivery → CTA
+ *
+ * Notes on sourcing:
+ *   • `AboutStats` derives its figures from /api/projects and /api/team instead of the
+ *     previous hard-coded "50+ projects / 12+ countries" claims, which had no basis in the
+ *     project data.
+ *   • `AboutStory` is a statement, not a timeline — the founding year is the only verified
+ *     historical fact in the repository.
+ *   • `AboutWork` reads the same CMS catalogue as `/projects`; no project detail is retyped.
+ *   • `AboutDelivery` states only the locations in `siteConfig`.
+ *   • `TeamMembers` is unchanged and still renders the live roster with its loading, error
+ *     and missing-photo states.
+ */
 export default function AboutPage() {
   return (
     <>
-      <PageHero
-        eyebrow="ABOUT KARALASOFT"
-        headingId="about-heading"
-        title="Building the"
-        highlight="Future"
-        lead={aboutLead}
+      <AboutHero />
+
+      <AboutStats />
+
+      <AboutWho />
+
+      <AboutWhy />
+
+      <AboutStory />
+
+      <AboutCapabilities />
+
+      <ProcessSection
+        eyebrow={ABOUT_PROCESS.eyebrow}
+        title={ABOUT_PROCESS.title}
+        description={ABOUT_PROCESS.description}
+        steps={ABOUT_PROCESS.steps}
+        alt={false}
+        variant="flow"
       />
 
-      {/* Headline figures */}
-      <Container>
-        <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:gap-4 lg:grid-cols-4">
-          {aboutStats.map((stat) => (
-            <li
-              key={stat.label}
-              className="rounded-[22px] glass px-4 py-6 text-center backdrop-blur-[18px] sm:px-6 sm:py-7"
-            >
-              <strong className="block bg-[linear-gradient(90deg,var(--t-grad-ink),var(--color-cyan)_45%,var(--color-violet))] bg-clip-text text-[34px] leading-none tracking-[-0.04em] text-transparent sm:text-[42px]">
-                {stat.value}
-              </strong>
-              <span className="mt-2 block text-[13px] text-muted">{stat.label}</span>
-            </li>
-          ))}
-        </ul>
-      </Container>
+      <AboutPrinciples />
 
-      {/* What we do today */}
-      <Section labelledBy="story-heading">
+      <AboutWork />
+
+      <Section alt labelledBy="about-team-heading">
         <Container>
           <SectionHead
-            id="story-heading"
+            id="about-team-heading"
+            eyebrow="The team"
             title={
               <>
-                Global delivery.
+                The people
                 <br />
-                Personal partnership.
+                behind the work.
               </>
             }
-            description={aboutStory}
-          />
-
-          <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 lg:gap-[18px]">
-            {solutionAreas.map((area, index) => {
-              const Icon = area.icon;
-              return (
-                <li key={area.title}>
-                  <Card delay={(index % 4) * 0.07}>
-                    <span
-                      role="img"
-                      aria-label={area.title}
-                      className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
-                    >
-                      <Icon aria-hidden="true" className="size-5 text-cyan" strokeWidth={2} />
-                    </span>
-                    <h3 className="mt-5 mb-2 text-[19px]">{area.title}</h3>
-                    <p className="m-0 text-[15px] text-muted">{area.description}</p>
-                  </Card>
-                </li>
-              );
-            })}
-          </ul>
-        </Container>
-      </Section>
-
-      {/* Core values */}
-      <Section alt labelledBy="values-heading">
-        <Container>
-          <SectionHead
-            id="values-heading"
-            eyebrow="OUR CORE VALUES"
-            title="Built on six principles."
-          />
-
-          <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[18px]">
-            {coreValues.map((value, index) => {
-              const Icon = value.icon;
-              return (
-                <li key={value.title}>
-                  <Card delay={(index % 3) * 0.08}>
-                    <span
-                      role="img"
-                      aria-label={value.title}
-                      className="grid size-12 shrink-0 place-items-center rounded-[15px] border border-line bg-[linear-gradient(135deg,rgba(88,236,255,0.17),rgba(83,119,255,0.18),rgba(156,100,255,0.20))]"
-                    >
-                      <Icon aria-hidden="true" className="size-5 text-cyan" strokeWidth={2} />
-                    </span>
-                    <h3 className="mt-5 mb-2 text-[22px]">{value.title}</h3>
-                    <p className="m-0 text-muted">{value.description}</p>
-                  </Card>
-                </li>
-              );
-            })}
-          </ul>
-        </Container>
-      </Section>
-
-      {/* Team */}
-      <Section labelledBy="team-heading">
-        <Container>
-          <SectionHead
-            id="team-heading"
-            eyebrow="THE TEAM"
-            title="Meet our talented team."
             description={teamIntro}
           />
 
@@ -144,26 +96,15 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      {/* Location + closing CTA */}
+      <AboutDelivery />
+
       <Section alt>
         <Container>
-          <div className="mb-8 flex flex-col items-start gap-5 lg:mb-9 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <Eyebrow>GLOBAL DELIVERY</Eyebrow>
-              <h2 className="mt-2.5 mb-0 text-[clamp(30px,4.5vw,48px)] leading-none tracking-[-0.05em] text-balance">
-                {aboutLocationTitle}
-              </h2>
-              <p className="mt-3 mb-0 max-w-[620px] text-[17px] text-muted">
-                {aboutLocationDescription}
-              </p>
-            </div>
-          </div>
-
           <CTA
-            eyebrow="WORK WITH US"
-            title="Have a product in mind?"
-            description="Tell us what you want to build and we’ll help shape the scope, architecture, experience and delivery plan."
-            action={{ label: 'Start the conversation', href: '/contact' }}
+            eyebrow={ABOUT_CTA.eyebrow}
+            title={ABOUT_CTA.title}
+            description={ABOUT_CTA.description}
+            action={ABOUT_CTA.action}
           />
         </Container>
       </Section>

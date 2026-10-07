@@ -12,7 +12,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 
-import type { ContactChannel, CoreValue, StatItem } from './types';
+import type { ContactChannel, CoreValue } from './types';
 
 /* -------------------------------------------------------------------------- */
 /*  About                                                                     */
@@ -25,11 +25,6 @@ export const aboutLead =
 /** What the company does today. */
 export const aboutStory =
   'Today, we partner with forward-thinking startups and enterprises to build scalable web applications, mobile solutions, desktop software, and enterprise platforms that drive real business growth.';
-
-/** Delivery model / footprint. */
-export const aboutLocationTitle = 'Based in Dhaka, Bangladesh';
-export const aboutLocationDescription =
-  'Operating globally with remote team members and clients across 12+ countries. We deliver world-class software from the heart of South Asia.';
 
 /**
  * The four solution areas named in the company story, given their own cards so the
@@ -61,13 +56,6 @@ export const solutionAreas: readonly CoreValue[] = [
 /** Roster intro. */
 export const teamIntro =
   'A passionate group of engineers, designers, and business professionals dedicated to delivering exceptional results for every client.';
-
-export const aboutStats: readonly StatItem[] = [
-  { value: '12+', label: 'Team members' },
-  { value: '50+', label: 'Projects delivered' },
-  { value: '5+', label: 'Years experience' },
-  { value: '12+', label: 'Countries served' },
-];
 
 export const coreValues: readonly CoreValue[] = [
   {
