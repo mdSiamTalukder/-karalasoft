@@ -16,7 +16,7 @@ import { PROJECTS_CTA } from '@/lib/projects-page';
  */
 export function ProjectCta() {
   return (
-    <div className="pb-[72px] sm:pb-20 lg:pb-[95px]">
+    <div className="pt-[56px] pb-[72px] sm:pt-[64px] sm:pb-20 lg:pt-[80px] lg:pb-[95px]">
       <Container>
         <Reveal>
           <div className="relative overflow-hidden rounded-[28px] border border-line bg-[linear-gradient(140deg,var(--t-glass-top),var(--t-glass-bottom))] px-6 py-14 text-center backdrop-blur-[18px] sm:px-10 sm:py-16">
