@@ -5,12 +5,16 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  FileText,
   FolderKanban,
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
+  Package,
   Settings,
   Users,
+  Wrench,
   X,
 } from 'lucide-react';
 
@@ -18,14 +22,26 @@ import type { AdminUser } from '@/lib/admin-api';
 
 /**
  * Navigation for the Admin Panel.
- * Dashboard + Projects are live; Team / Services / Products / Settings are placeholders
- * for future sections and are intentionally inert (not links to missing routes).
+ *
+ * Labels, order and destinations follow the KaralaSoft reference admin panel:
+ * Dashboard → Projects → Products → Team → Services → Site Settings → About Content →
+ * Messages.
+ *
+ * `live: false` marks a section the CMS exposes no read endpoint for (site settings, about
+ * content, messages — `GET /api/settings`, `/api/about` as a CMS-editable record and
+ * `/api/messages` are not available to this admin build). Those entries stay visible so
+ * the information architecture is preserved, but they render inert rather than linking to
+ * a route that does not exist.
  */
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, live: true },
   { href: '/admin/projects', label: 'Projects', icon: FolderKanban, live: true },
-  { href: '/admin/team', label: 'Team', icon: Users, live: false },
-  { href: '/admin/settings', label: 'Settings', icon: Settings, live: false },
+  { href: '/admin/products', label: 'Products', icon: Package, live: true },
+  { href: '/admin/team', label: 'Team', icon: Users, live: true },
+  { href: '/admin/services', label: 'Services', icon: Wrench, live: true },
+  { href: '/admin/settings', label: 'Site Settings', icon: Settings, live: false },
+  { href: '/admin/about', label: 'About Content', icon: FileText, live: false },
+  { href: '/admin/messages', label: 'Messages', icon: MessageSquare, live: false },
 ] as const;
 
 function isActive(pathname: string, href: string) {
@@ -108,7 +124,9 @@ export function AdminSidebar({
                 <span className={`${base} ${tone}`} aria-disabled="true">
                   <Icon aria-hidden="true" className="size-4 shrink-0" />
                   {item.label}
-                  <span className="ml-auto text-[11px] text-muted-soft/70">Soon</span>
+                  <span className="ml-auto text-[11px] text-muted-soft/70">
+                    Unavailable
+                  </span>
                 </span>
               )}
             </li>
