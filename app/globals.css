@@ -298,9 +298,36 @@
 /* -------------------------------------------------------------------------- */
 
 @layer components {
+  /*
+    Global content width.
+    Single source of truth for every `<Container>` in the app, plus the Navbar and
+    Footer, so widening it here widens the whole site consistently.
+
+    Widths expand with the viewport up to a 1440px cap, then stay centred with
+    controlled gutters:
+      mobile  < 768px  → 16px gutters
+      tablet  ≥ 768px  → 24px gutters
+      desktop ≥ 1024px → 32px gutters, capped at 1440px
+
+    Breakpoints are written in `rem` to match Tailwind's defaults (md = 48rem,
+    lg = 64rem). Because the cap lives inside `min()`, content reaches 1440px at a
+    1504px viewport and simply centres beyond that — no media query needed for the cap.
+  */
   .container-x {
-    width: min(1200px, calc(100% - 40px));
+    width: min(1440px, calc(100% - 2rem));
     margin-inline: auto;
+  }
+
+  @media (width >= 48rem) {
+    .container-x {
+      width: min(1440px, calc(100% - 3rem));
+    }
+  }
+
+  @media (width >= 64rem) {
+    .container-x {
+      width: min(1440px, calc(100% - 4rem));
+    }
   }
 
   /* Faint glassy overlay used by cards, badges and popovers. */

@@ -62,6 +62,22 @@ function DashboardFrame({ product }: { product: Product }) {
               sizes="(max-width: 1024px) 100vw, 46vw"
               className="object-cover object-top"
               priority
+              /*
+                Served unoptimized, deliberately.
+
+                Product screenshots are hosted on the CMS host and are large PNGs — the HRM
+                capture is ~1.5 MB and takes ~4s to fetch. When a browser requests several
+                `srcset` candidates at once on a cold cache, the optimizer's own upstream
+                fetch and resize work per candidate exceeded its internal timeout and
+                returned `504 Gateway Timeout`, leaving the hero frame blank.
+
+                `unoptimized` removes that timeout path entirely while keeping the image
+                itself, the wrapper's `aspect-[3/2]` box and `object-cover object-top`
+                cropping — so the rendered result is identical at every breakpoint. This is
+                scoped to this one element; the global image strategy, `remotePatterns` and
+                every other image on the site are untouched.
+              */
+              unoptimized
             />
             <span
               aria-hidden="true"

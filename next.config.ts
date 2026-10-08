@@ -15,8 +15,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'admin.karalasoft.com', pathname: '/uploads/**' },
     ],
     // Next 16 only serves qualities listed here; anything else is rejected/clamped.
-    // 75 is the framework default, 82 is used for the portrait/cover imagery.
-    qualities: [75, 82],
+    // 75 is the framework default, 82 is used for the portrait/cover imagery, and 86 is
+    // the larger hero/case-study render in `FeaturedProject`.
+    qualities: [75, 82, 86],
     formats: ['image/avif', 'image/webp'],
   },
   compiler: {

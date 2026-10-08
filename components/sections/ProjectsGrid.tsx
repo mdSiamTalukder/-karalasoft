@@ -85,7 +85,20 @@ function ProjectCard({
             className="object-cover transition-transform duration-700 ease-[cubic-bezier(.2,.8,.2,1)] group-hover/proj:scale-[1.07]"
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
             quality={82}
-            priority={index < 3}
+            /*
+              No `priority` here on purpose.
+
+              This archive sits well below the fold, and its first card is the same project
+              the featured case study above already renders — but at a different quality
+              (`82` here vs `86` there). Preloading from the grid made the browser fetch a
+              `q=82` variant that the page never actually painted, because the visible
+              image is the featured `q=86` one. Chrome then reported the preload as
+              "not used within a few seconds".
+
+              `FeaturedProject` keeps `priority`, since it is the above-the-fold / LCP
+              image. Leaving the grid unpreloaded also matches how every other grid on
+              the site loads.
+            */
             onError={() => setImageFailed(true)}
           />
         ) : (

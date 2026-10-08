@@ -1,6 +1,12 @@
 import type { ElementType, HTMLAttributes } from 'react';
 
-/** Page-width wrapper — `min(1200px, 100% - 40px)`, same as `.container`. */
+/**
+ * Page-width wrapper.
+ *
+ * The width itself lives in the single `.container-x` rule in `app/globals.css`
+ * (`min(1440px, …)` with responsive gutters). Change it there — not here — so every
+ * container on the site moves together.
+ */
 export function Container({
   as: Tag = 'div',
   className = '',

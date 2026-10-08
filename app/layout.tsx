@@ -72,8 +72,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
      * here so the server markup is deterministic; `ThemeScript` upgrades it from
      * localStorage before first paint. `suppressHydrationWarning` is required because the
      * script mutates this attribute before React hydrates.
+     *
+     * `data-scroll-behavior="smooth"` is the attribute Next.js checks before suppressing
+     * smooth scrolling during a route transition. This site deliberately sets
+     * `html { scroll-behavior: smooth }` in globals.css and honours
+     * `prefers-reduced-motion` by switching it back to `auto`, so the attribute records
+     * that the behaviour is intentional — without it Next logs a console warning on every
+     * client-side navigation. The smooth-scroll behaviour itself is unchanged.
      */
-    <html lang="en" className="scroll-smooth" data-theme="dark" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="scroll-smooth"
+      data-theme="dark"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body className="antialiased">
         {/* Runs before paint — prevents a flash of the wrong theme on refresh. */}
         <ThemeScript />

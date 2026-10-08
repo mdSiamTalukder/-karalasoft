@@ -39,16 +39,37 @@ export const PROJECT_API_URL = 'https://admin.karalasoft.com/api/projects';
 /** Same-origin route the browser calls (`app/api/projects/route.ts`). */
 export const PROJECT_PROXY_URL = '/api/projects';
 
-/** Host that actually serves the project imagery. */
+/** Host that serves the `/images/projects/*` imagery. */
 export const PROJECT_IMAGE_ORIGIN = 'https://karalasoft.com';
 
-/** Turn a relative or absolute `image_url` into something `next/image` accepts. */
+/**
+ * Host that serves CMS uploads.
+ *
+ * The CMS stores editor-uploaded files under `/uploads/*`, and those exist only on the
+ * admin host — the public host answers them with `422 Unprocessable Entity` and a
+ * `text/plain` body ("Invalid source image"), which is not decodable by `next/image`.
+ * Mirrors `PRODUCT_IMAGE_ORIGIN` in `lib/products.ts`, and the hostname is already
+ * whitelisted in `next.config.ts` for this exact `/uploads/**` path.
+ */
+export const PROJECT_UPLOAD_ORIGIN = 'https://admin.karalasoft.com';
+
+/** CMS uploads live on the admin host; everything else on the public host. */
+function originForUploadPath(path: string): string {
+  return path.startsWith('/uploads/') ? PROJECT_UPLOAD_ORIGIN : PROJECT_IMAGE_ORIGIN;
+}
+
+/**
+ * Turn a relative or absolute `image_url` into something `next/image` accepts.
+ *
+ * Absolute URLs pass through untouched. Relative paths are resolved against the host that
+ * actually serves them, so a CMS upload is never requested from a host that rejects it.
+ */
 export function resolveProjectImageUrl(imageUrl: string | null | undefined): string | null {
   if (typeof imageUrl !== 'string') return null;
   const trimmed = imageUrl.trim();
   if (!trimmed) return null;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith('/')) return `${PROJECT_IMAGE_ORIGIN}${trimmed}`;
+  if (trimmed.startsWith('/')) return `${originForUploadPath(trimmed)}${trimmed}`;
   return null;
 }
 
