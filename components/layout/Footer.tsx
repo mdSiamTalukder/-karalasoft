@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { COMPANY_EMAIL, COMPANY_LOCATIONS, COMPANY_PHONE, siteConfig } from '@/lib/site';
@@ -31,13 +32,17 @@ export function Footer() {
             className="inline-flex items-center gap-3 rounded-[13px] transition-opacity hover:opacity-85"
             aria-label={`${siteConfig.name} — home`}
           >
-            <span
-              aria-hidden="true"
-              className="grid size-[42px] place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-on-accent font-[950] shadow-[0_0_35px_rgba(88,236,255,0.20)]"
-            >
-              {siteConfig.mark}
+            {/* Same lockup, identical sizing and identical theme treatment as the Navbar. */}
+            <span className="grid shrink-0 place-items-center rounded-[10px] py-[3px] [html[data-theme=dark]_&]:bg-[#fefefe] [html[data-theme=dark]_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]">
+              <Image
+                src="/images/karalasoftLogo2.png"
+                alt={`${siteConfig.name} logo`}
+                width={1600}
+                height={533}
+                sizes="(max-width: 639px) 120px, 150px"
+                className="h-[34px] w-[120px] object-contain sm:h-[42px] sm:w-[150px]"
+              />
             </span>
-            <span className="text-[20px] font-[850] tracking-[-0.03em]">{siteConfig.name}</span>
           </Link>
           <p className="mt-3 mb-0 block max-w-[38ch] text-muted">
             Full-service product engineering for web, mobile, software and AI-enabled experiences.

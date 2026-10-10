@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -49,13 +50,34 @@ export function Navbar() {
           className="flex shrink-0 items-center gap-3 rounded-[13px] transition-opacity hover:opacity-85"
           aria-label={`${siteConfig.name} — home`}
         >
+          {/*
+            Official horizontal lockup, occupying the space the old 42px "K" mark plus
+            the "KaralaSoft" text used to take (~150 x 42).
+
+            `karalasoftLogo2.png` is a transparent-background derivative of
+            `karalasoftLogo2.jpeg`: the plain plate was made alpha=0 while every logo
+            pixel was copied through untouched (verified bit-identical), so in the LIGHT
+            theme the logo sits directly on the page and the background is invisible.
+
+            The wordmark is dark ink (rgb 0,89,107), so on the dark surface it would fall
+            to ~2.5:1 contrast. Rather than recolouring it or dropping a dark plate behind
+            dark text, the dark theme keeps a light surface behind the logo using the same
+            plain colour the original plate used — rounded and inset, so it reads as a
+            deliberate brand plate rather than a stray image tile.
+          */}
           <span
-            aria-hidden="true"
-            className="grid size-[42px] place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-on-accent font-[950] shadow-[0_0_35px_rgba(88,236,255,0.20)]"
+            className="grid shrink-0 place-items-center rounded-[10px] py-[3px] [html[data-theme=dark]_&]:bg-[#fefefe] [html[data-theme=dark]_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]"
           >
-            {siteConfig.mark}
+            <Image
+              src="/images/karalasoftLogo2.png"
+              alt={`${siteConfig.name} logo`}
+              width={1600}
+              height={533}
+              sizes="(max-width: 639px) 120px, 150px"
+              priority
+              className="h-[34px] w-[120px] object-contain sm:h-[42px] sm:w-[150px]"
+            />
           </span>
-          <span className="text-[20px] font-[850] tracking-[-0.03em]">{siteConfig.name}</span>
         </Link>
 
         <ul className="hidden items-center gap-2 lg:flex">
