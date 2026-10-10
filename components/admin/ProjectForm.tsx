@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useActionState, useEffect, useState, useTransition } from 'react';
+import { useActionState, useCallback, useEffect, useRef, useState } from 'react';
 import { ImageOff, Loader2, Save, Upload, X } from 'lucide-react';
 
 import {
@@ -38,6 +38,35 @@ const blank: ProjectFormValues = {
 
 const initialState: ActionState = { ok: false, message: '' };
 
+/**
+ * ------------------------------------------------------------------------------------
+ * Cover image upload limits
+ * ------------------------------------------------------------------------------------
+ * Enforced on the client BEFORE a byte is sent, and mirrored by `uploadImageAction` on the
+ * server. Keep all three in step: this constant, `next.config.ts`
+ * (`experimental.serverActions.bodySizeLimit`, which must exceed this) and the check in
+ * `app/admin/actions.ts`.
+ */
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+/** Only the three formats the UI advertises. Anything else is rejected up front. */
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+const ACCEPTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'] as const;
+
+/** Human-readable size for the error copy. */
+function formatSize(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.round(bytes / 1024)} KB`;
+}
+
+/** Browser MIME check, with an extension fallback for the odd browser reporting `''`. */
+function isAcceptedImage(file: File): boolean {
+  if ((ACCEPTED_TYPES as readonly string[]).includes(file.type)) return true;
+  const name = file.name.toLowerCase();
+  return ACCEPTED_EXTENSIONS.some((extension) => name.endsWith(extension));
+}
+
 export function ProjectForm({
   mode,
   project,
@@ -54,9 +83,46 @@ export function ProjectForm({
   );
 
   const [imageUrl, setImageUrl] = useState(values.image_url);
-  const [uploading, startUpload] = useTransition();
   const [uploadError, setUploadError] = useState('');
   const [dirty, setDirty] = useState(false);
+
+  /**
+   * Uploading is an explicit boolean rather than a `useTransition` flag.
+   *
+   * The previous transition-based version had no error handling: when the Server Action
+   * rejected (oversized body, dropped connection), the `await` inside the transition threw,
+   * the transition never settled and `uploading` stayed `true` for good — leaving the form
+   * permanently disabled with a spinner and no way out. Explicit state, cleared in a
+   * `finally`, always restores the UI.
+   */
+  const [uploading, setUploading] = useState(false);
+
+  /**
+   * Ref-based in-flight lock. `disabled` on the input alone is not enough: a second
+   * `change` event can still arrive before React re-renders, which used to stack parallel
+   * uploads of the same file.
+   */
+  const uploadInFlight = useRef(false);
+
+  /** Transient preview of the file the visitor just picked, before the upload returns. */
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
+
+  /** Drop the current blob URL, if any. */
+  const releaseLocalPreview = useCallback(() => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+    setLocalPreview(null);
+  }, []);
+
+  // Never leak a blob URL: release the last one when the form unmounts.
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
 
   // Warn before losing unsaved edits (create only — the edit form is short).
   useEffect(() => {
@@ -71,23 +137,77 @@ export function ProjectForm({
 
   const preview = resolveMediaUrl(imageUrl);
 
+  /**
+   * Show the picked file immediately.
+   *
+   * `URL.createObjectURL` is a cheap handle — it does not read or decode the file — so the
+   * preview appears without touching the main thread, even for an 8 MB image. Nothing is
+   * base64-encoded, which is what would otherwise stall the UI. The old URL is revoked
+   * first so repeated picks cannot accumulate blobs.
+   */
+  function showLocalPreview(file: File) {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    const url = URL.createObjectURL(file);
+    previewUrlRef.current = url;
+    setLocalPreview(url);
+  }
+
+  async function uploadFile(file: File) {
+    uploadInFlight.current = true;
+    setUploading(true);
+    setUploadError('');
+
+    try {
+      const data = new FormData();
+      data.set('image', file);
+      const result = await uploadImageAction(data);
+
+      if (result.ok && result.redirectTo) {
+        setImageUrl(result.redirectTo);
+        setDirty(true);
+        // The saved path is now the source of truth — the blob is redundant.
+        releaseLocalPreview();
+      } else {
+        setUploadError(result.message || 'The image could not be uploaded. Please try again.');
+      }
+    } catch {
+      // The action itself failed (network drop, rejected body, server error). Without this
+      // the rejection escaped the transition and left the form stuck on "Uploading…".
+      setUploadError(
+        'The image could not be uploaded. Check your connection and try again — images must be JPG, PNG or WebP under 8 MB.',
+      );
+    } finally {
+      // Always restore the UI, on every path.
+      uploadInFlight.current = false;
+      setUploading(false);
+    }
+  }
+
   function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = ''; // allow re-picking the same file
     if (!file) return;
 
-    setUploadError('');
-    startUpload(async () => {
-      const data = new FormData();
-      data.set('image', file);
-      const result = await uploadImageAction(data);
-      if (result.ok && result.redirectTo) {
-        setImageUrl(result.redirectTo);
-        setDirty(true);
-      } else {
-        setUploadError(result.message);
-      }
-    });
+    // Refuse a second upload while one is still running.
+    if (uploadInFlight.current) return;
+
+    // Validate locally first, so an oversized or wrong-type file is never uploaded and the
+    // Server Action is never asked to stream a body the framework will reject.
+    if (!isAcceptedImage(file)) {
+      releaseLocalPreview();
+      setUploadError('Choose a JPG, PNG or WebP image.');
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      releaseLocalPreview();
+      setUploadError(
+        `That image is ${formatSize(file.size)}. Images must be 8 MB or smaller.`,
+      );
+      return;
+    }
+
+    showLocalPreview(file);
+    void uploadFile(file);
   }
 
   return (
@@ -220,6 +340,7 @@ export function ProjectForm({
               value={imageUrl}
               onChange={(event) => {
                 setImageUrl(event.target.value);
+                releaseLocalPreview();
                 setDirty(true);
               }}
               placeholder="/images/projects/example.png"
@@ -228,17 +349,44 @@ export function ProjectForm({
           </AdminField>
 
           <div className="mt-4">
+            {/*
+              `relative` is REQUIRED, not cosmetic: `next/image` with `fill` renders the
+              <img> as `position:absolute; inset:0`. Without a positioned ancestor this box
+              resolves against the initial containing block, so the absolutely-positioned
+              image escapes the Cover image field and stretches across the viewport.
+
+              `block` + `aspect-[4/3]` gives the box a stable height before any image
+              loads, and `max-h-[220px]` bounds it so a tall image can never grow the
+              field. No `fixed` positioning and no viewport units are used.
+            */}
             <span
               aria-hidden="true"
-              className="mb-1.5 block aspect-[4/3] w-full overflow-hidden rounded-[16px] border border-white/10 bg-[#081522]"
+              className="relative mb-1.5 block aspect-[4/3] max-h-[220px] w-full overflow-hidden rounded-[16px] border border-white/10 bg-[#081522]"
             >
-              {preview ? (
+              {/*
+                While the upload is in flight the picked file is shown via a transient
+                blob: URL for instant feedback, then the stored path takes over once the
+                action returns. `next/image` cannot take a `blob:` source and encoding the
+                file as a data URL would stall the main thread, so that one branch is a
+                plain <img> with explicit containment styles.
+              */}
+              {localPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={localPreview}
+                  alt=""
+                  className="block h-auto max-h-[220px] w-full max-w-full object-contain"
+                  decoding="async"
+                />
+              ) : preview ? (
                 <Image
                   src={preview}
                   alt=""
                   fill
                   sizes="(max-width: 1024px) 100vw, 320px"
-                  className="object-cover"
+                  // Bounded by the `relative` wrapper above; `contain` keeps the whole
+                  // cover visible instead of cropping it to a fill.
+                  className="object-contain"
                 />
               ) : (
                 <span className="grid h-full place-items-center text-muted-soft">
@@ -262,7 +410,7 @@ export function ProjectForm({
               <input
                 id="image-file"
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleUpload}
                 disabled={uploading}
                 className="sr-only"
@@ -273,6 +421,8 @@ export function ProjectForm({
                   type="button"
                   onClick={() => {
                     setImageUrl('');
+                    setUploadError('');
+                    releaseLocalPreview();
                     setDirty(true);
                   }}
                   aria-label="Clear image"
@@ -284,7 +434,7 @@ export function ProjectForm({
             </div>
 
             <p className="mt-2 mb-0 text-[12px] text-muted-soft">
-              JPG, PNG or WebP up to 8&nbsp;MB.
+              JPG, PNG or WebP up to 8&nbsp;MB. Checked before upload.
             </p>
           </div>
         </AdminCard>

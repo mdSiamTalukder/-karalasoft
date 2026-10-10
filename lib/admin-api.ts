@@ -257,16 +257,35 @@ export function sortByOrder(projects: AdminProject[]): AdminProject[] {
 }
 
 /**
- * The backend stores site-relative paths (`/images/projects/x.png`) that are served by
- * the public site host, so admin previews must resolve them the same way.
+ * The backend stores two kinds of site-relative path and they are served by DIFFERENT
+ * hosts:
+ *
+ *   /images/projects/x.png  → the public site host
+ *   /uploads/x.png          → the admin host ONLY
+ *
+ * The public host does not serve `/uploads/*` at all. It answers those requests with
+ * `422 Unprocessable Entity`, `content-type: text/plain` and the body "Invalid source
+ * image", which is not a decodable image — and Next's image optimizer passes that status
+ * straight through, so the browser reports a 422 for the asset.
+ *
+ * Uploaded cover images (and the POS project image) therefore have to resolve against the
+ * admin host, exactly as `resolveProjectImageUrl` does for the public catalogue.
  */
 export const ADMIN_MEDIA_ORIGIN = process.env.ADMIN_MEDIA_ORIGIN?.trim() || 'https://karalasoft.com';
+
+/** Host that serves editor uploads. Mirrors `PROJECT_UPLOAD_ORIGIN` in `lib/projects.ts`. */
+export const ADMIN_UPLOAD_ORIGIN = 'https://admin.karalasoft.com';
+
+/** CMS uploads live on the admin host; everything else on the public site host. */
+function mediaOriginFor(path: string): string {
+  return path.startsWith('/uploads/') ? ADMIN_UPLOAD_ORIGIN : ADMIN_MEDIA_ORIGIN;
+}
 
 export function resolveMediaUrl(path: string | null | undefined): string | null {
   if (!path) return null;
   const trimmed = path.trim();
   if (!trimmed) return null;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith('/')) return `${ADMIN_MEDIA_ORIGIN}${trimmed}`;
+  if (trimmed.startsWith('/')) return `${mediaOriginFor(trimmed)}${trimmed}`;
   return null;
 }
