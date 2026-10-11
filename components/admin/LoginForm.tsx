@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
@@ -38,19 +39,21 @@ export function LoginForm() {
         {/* ------------------------------------------------------------- branding */}
         <div className="mb-7 flex items-center gap-3.5">
           <span
-            aria-hidden="true"
-            className="grid size-11 shrink-0 place-items-center rounded-[13px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-[#041018] text-lg font-black"
+            className="grid shrink-0 place-items-center rounded-[10px] py-[3px] [html[data-theme=dark]_&]:bg-[#fefefe] [html[data-theme=dark]_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]"
           >
-            K
+            <Image
+              src="/images/karalasoftLogo2.png"
+              alt="KaralaSoft logo"
+              width={1600}
+              height={533}
+              sizes="150px"
+              priority
+              className="h-[42px] w-[150px] object-contain"
+            />
           </span>
-          <div className="min-w-0">
-            <p className="m-0 truncate text-[15px] leading-tight font-extrabold tracking-[-0.02em]">
-              KaralaSoft
-            </p>
-            <p className="m-0 mt-0.5 text-[13px] leading-tight text-muted-soft">
-              Admin Portal
-            </p>
-          </div>
+          <p className="m-0 min-w-0 truncate text-[13px] leading-tight text-muted-soft">
+            Admin Portal
+          </p>
         </div>
 
         {/* ---------------------------------------------------------------- copy */}

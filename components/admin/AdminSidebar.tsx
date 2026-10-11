@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -79,20 +80,17 @@ export function AdminSidebar({
 
   const nav = (
     <nav aria-label="Admin" className="flex h-full flex-col gap-6 p-5">
-      <Link href="/admin" className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className="grid size-[38px] place-items-center rounded-[12px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-[#041018] font-black"
-        >
-          K
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate text-[15px] font-extrabold tracking-[-0.02em]">
-            KaralaSoft
-          </span>
-          <span className="block truncate text-[11px] tracking-[0.14em] text-muted-soft uppercase">
-            Admin panel
-          </span>
+      <Link href="/admin" className="block">
+        <span className="grid w-full place-items-center rounded-[12px] p-1 [html[data-theme=dark]_&]:bg-[#fefefe] [html[data-theme=dark]_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]">
+          <Image
+            src="/images/karalasoftLogo2.png"
+            alt="KaralaSoft logo"
+            width={1600}
+            height={533}
+            sizes="223px"
+            priority
+            className="h-auto w-full object-contain"
+          />
         </span>
       </Link>
 
@@ -161,14 +159,18 @@ export function AdminSidebar({
 
       {/* Mobile top bar */}
       <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-white/10 bg-[rgba(5,9,19,0.85)] px-4 py-3 backdrop-blur-[18px] lg:hidden">
-        <span className="flex items-center gap-2.5">
-          <span
-            aria-hidden="true"
-            className="grid size-[32px] place-items-center rounded-[10px] bg-[conic-gradient(from_180deg,var(--color-cyan),var(--color-blue),var(--color-violet),var(--color-pink),var(--color-cyan))] text-[#041018] font-black"
-          >
-            K
+        <span className="flex min-w-0 items-center gap-2.5">
+          <span className="grid min-w-0 place-items-center rounded-[10px] p-1 [html[data-theme=dark]_&]:bg-[#fefefe] [html[data-theme=dark]_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]">
+            <Image
+              src="/images/karalasoftLogo2.png"
+              alt="KaralaSoft logo"
+              width={1600}
+              height={533}
+              sizes="(max-width: 640px) 136px, 168px"
+              priority
+              className="h-auto w-[136px] object-contain sm:w-[168px]"
+            />
           </span>
-          <span className="text-[15px] font-extrabold">Admin</span>
         </span>
         <button
           type="button"
