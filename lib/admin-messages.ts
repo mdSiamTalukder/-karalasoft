@@ -35,6 +35,17 @@ export interface AdminMessage {
   readonly need: string | null;
   /** Present only if the stored record has one — the public form has no subject field. */
   readonly subject: string | null;
+  /** Profile photo, only if the record genuinely carries one. Normally `null`. */
+  readonly avatarUrl: string | null;
+  /**
+   * Optional sender details the Project Brief form does **not** collect.
+   *
+   * Always `null` for records created by the public form. They are mapped only so that a
+   * record which genuinely carries one is shown rather than silently dropped — never
+   * inferred, and never rendered as an empty placeholder.
+   */
+  readonly phone: string | null;
+  readonly website: string | null;
   /** The complete body. Never truncated. */
   readonly message: string | null;
   readonly createdAt: string | null;
@@ -135,6 +146,34 @@ export function normalizeMessage(raw: unknown, fallbackIndex: number): AdminMess
     company: pickStr(merged, ['company', 'organisation', 'organization', 'company_name']),
     need,
     subject,
+    avatarUrl: pickStr(raw, [
+      'avatar_url',
+      'avatar',
+      'image_url',
+      'imageUrl',
+      'photo_url',
+      'photo',
+      'profile_image',
+      'picture',
+    ]),
+    phone: pickStr(raw, [
+      'phone',
+      'phone_number',
+      'phoneNumber',
+      'telephone',
+      'mobile',
+      'contact_number',
+      'contactNumber',
+    ]),
+    website: pickStr(raw, [
+      'website',
+      'website_url',
+      'websiteUrl',
+      'web_url',
+      'webUrl',
+      'homepage',
+      'site_url',
+    ]),
     message: pickStr(merged, ['message', 'body', 'content', 'text', 'description']),
     createdAt: pickStr(merged, [
       'created_at',
@@ -250,4 +289,57 @@ export function formatMessageDate(value: string | null): string | null {
     timeStyle: 'short',
     timeZone: 'UTC',
   }) + ' UTC';
+}
+
+/**
+ * Hosts already permitted by `images.remotePatterns` in `next.config.ts`.
+ *
+ * `next/image` throws at render time for a remote host that is not configured, so a photo
+ * on any other origin must never reach it. Rather than widening the image config for a
+ * field the contact form does not collect, unknown hosts resolve to `null` and the avatar
+ * falls back to initials.
+ */
+const ALLOWED_IMAGE_HOSTS = new Set(['karalasoft.com', 'admin.karalasoft.com']);
+
+/** Resolve a stored photo to an absolute URL, or `null` when it is absent/unusable. */
+export async function safeAvatarUrl(raw: string | null): Promise<string | null> {
+  if (!raw) return null;
+  const { resolveMediaUrl } = await import('@/lib/admin-api');
+  const resolved = resolveMediaUrl(raw);
+  if (!resolved) return null;
+  try {
+    const url = new URL(resolved);
+    return url.protocol === 'https:' && ALLOWED_IMAGE_HOSTS.has(url.hostname) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A `mailto:` link that opens the admin's mail client with the original message quoted.
+ *
+ * This only builds a link — it sends nothing and exposes nothing, because the browser hands
+ * the draft to the user's own mail client. Returns `null` when there is no sender address,
+ * so the UI can omit the action entirely instead of rendering a dead button.
+ */
+export function replyMailto(message: AdminMessage): string | null {
+  if (!message.email) return null;
+
+  const subject = message.subject ?? message.need ?? 'Your message';
+  const quoted = (message.message ?? '').trim();
+  const when = formatMessageDate(message.createdAt);
+
+  const body = [
+    '',
+    '',
+    '--- Original message ---',
+    ...(when ? [`Received: ${when}`] : []),
+    ...(message.name ? [`From: ${message.name}`] : []),
+    ...(message.company ? [`Company: ${message.company}`] : []),
+    ...(message.need ? [`Interested in: ${message.need}`] : []),
+    '',
+    quoted,
+  ].join('\n');
+
+  return `mailto:${message.email}?subject=${encodeURIComponent(`Re: ${subject}`)}&body=${encodeURIComponent(body)}`;
 }
