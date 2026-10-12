@@ -65,7 +65,7 @@ function Field({
  * Validation runs on submit and clears per-field as the visitor types.
  *
  * Submits to `POST /api/contact`, which validates server-side and emails the brief via
- * Resend. Nothing is stored. A honeypot field is included purely as a spam brake.
+ * email. Nothing is stored. A honeypot field is included purely as a spam brake.
  */
 export function ContactForm() {
   const uid = useId();

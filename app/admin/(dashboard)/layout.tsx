@@ -19,7 +19,11 @@ export default async function AdminDashboardLayout({
   if (!session) redirect('/admin/login');
 
   return (
-    <div className="flex min-h-dvh">
+    // `flex-col` on mobile so AdminSidebar's mobile <header> (a sibling of <aside>, hidden
+    // below `lg`) stacks ABOVE the content instead of competing with it for horizontal
+    // space. As a row flex item it took ~228px and squeezed the content column to ~147px
+    // on a 375px screen. `lg:flex-row` restores the sidebar layout on desktop.
+    <div className="flex min-h-dvh flex-col lg:flex-row">
       <AdminSidebar user={session.user} onLogout={logoutAction} />
       {/* The root layout already renders <main id="main">, so this stays a div to avoid
           nested landmark elements. */}

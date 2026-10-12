@@ -199,6 +199,55 @@ export function fetchCurrentUser(token: string, signal?: AbortSignal): Promise<A
   return adminFetch<AdminUser>('/api/auth/me', { token, ...(signal ? { signal } : {}) });
 }
 
+/* ----------------------------------------------------------------------- about */
+
+/**
+ * The About record served by the CMS at `GET /api/about`.
+ *
+ * These field names are the API's own snake_case — they are deliberately NOT renamed to
+ * camelCase, because this record is stored and returned verbatim by the upstream service
+ * and the admin view is a faithful mirror of what is published.
+ *
+ * `GET /api/about` currently answers `allow: GET` only, so this record is **read-only**:
+ * the CMS publishes no write verb for it and none is invented here. Editing About content
+ * requires a write endpoint to exist upstream first.
+ */
+export interface AboutStat {
+  icon: string;
+  value: string;
+  label: string;
+}
+
+export interface AboutCoreValue {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface AboutRecord {
+  badge: string;
+  hero_title: string;
+  hero_highlight: string;
+  paragraphs: string[];
+  stats: AboutStat[];
+  core_values: AboutCoreValue[];
+  location_title: string;
+  location_text: string;
+  id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Read the live About record.
+ *
+ * Reuses the existing `adminFetch` helper, so this is the same base URL, error handling and
+ * `no-store` caching the other admin readers use. No new endpoint is created.
+ */
+export function fetchAboutRecord(token: string, signal?: AbortSignal): Promise<AboutRecord> {
+  return adminFetch<AboutRecord>('/api/about', { token, ...(signal ? { signal } : {}) });
+}
+
 export async function listProjects(token: string, signal?: AbortSignal): Promise<AdminProject[]> {
   const data = await adminFetch<AdminProject[] | { projects: AdminProject[] }>('/api/projects', {
     token,

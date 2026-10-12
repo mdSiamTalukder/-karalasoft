@@ -28,11 +28,21 @@ import type { AdminUser } from '@/lib/admin-api';
  * Dashboard → Projects → Products → Team → Services → Site Settings → About Content →
  * Messages.
  *
- * `live: false` marks a section the CMS exposes no read endpoint for (site settings, about
- * content, messages — `GET /api/settings`, `/api/about` as a CMS-editable record and
- * `/api/messages` are not available to this admin build). Those entries stay visible so
- * the information architecture is preserved, but they render inert rather than linking to
- * a route that does not exist.
+ * `live: false` marks a section with no readable data source, so the entry stays visible to
+ * preserve the information architecture but renders inert instead of linking to a route
+ * that does not exist.
+ *
+ * Site Settings and About Content are now live. Site Settings reads the real `siteConfig`
+ * from `lib/site.ts` (the CMS publishes no `GET /api/settings` — that path responds 404).
+ * About Content reads the published `GET /api/about` record. Both are read-only views; the
+ * CMS exposes no write verb for them, so neither page offers edit or save controls.
+ *
+ * Messages reads the stored contact submissions through `GET /api/contact` (falling back to
+ * `GET /api/contact/messages`) using the signed-in admin's own bearer token. Both routes
+ * answer `401 {"detail":"Invalid or expired token"}` without it, which is an auth gate on a
+ * route that exists — not the `404` that `/api/messages` and `/api/settings` return. Read
+ * access only: the backend publishes no verified write verb for messages, so the inbox and
+ * details view offer no mark-as-read, reply or delete control.
  */
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, live: true },
@@ -40,9 +50,9 @@ const NAV_ITEMS = [
   { href: '/admin/products', label: 'Products', icon: Package, live: true },
   { href: '/admin/team', label: 'Team', icon: Users, live: true },
   { href: '/admin/services', label: 'Services', icon: Wrench, live: true },
-  { href: '/admin/settings', label: 'Site Settings', icon: Settings, live: false },
-  { href: '/admin/about', label: 'About Content', icon: FileText, live: false },
-  { href: '/admin/messages', label: 'Messages', icon: MessageSquare, live: false },
+  { href: '/admin/settings', label: 'Site Settings', icon: Settings, live: true },
+  { href: '/admin/about', label: 'About Content', icon: FileText, live: true },
+  { href: '/admin/messages', label: 'Messages', icon: MessageSquare, live: true },
 ] as const;
 
 function isActive(pathname: string, href: string) {

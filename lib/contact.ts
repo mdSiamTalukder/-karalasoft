@@ -4,7 +4,7 @@ import type { ContactErrors, ContactValues, SubmitResult } from './types';
  * ------------------------------------------------------------------------------------
  * Browser-side contact submission.
  * ------------------------------------------------------------------------------------
- * Client-safe by design: no Resend, no Zod, no server-only environment variables.
+ * Client-safe by design: no mail transport, no Zod, no server-only environment variables.
  * Posts to the Route Handler at `/api/contact`, which performs the authoritative
  * server-side validation and sends the email.
  *

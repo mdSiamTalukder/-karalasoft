@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { ZodError } from 'zod';
 
 import {
@@ -16,11 +16,13 @@ import { renderContactEmail } from '@/lib/contact-email';
  * ------------------------------------------------------------------------------------
  * POST /api/contact
  * ------------------------------------------------------------------------------------
- * Validates the submission with Zod, then emails it to the site owner via Resend.
- * Nothing is persisted — no database, no file writes, no auth.
+ * Validates the submission with Zod, then emails it to the site owner over Hostinger SMTP
+ * via Nodemailer. Nothing is persisted — no database, no file writes, no auth.
  *
- * The Resend API key is read from the server-only `RESEND_API_KEY` variable and is never
- * referenced from any client component, so it cannot leak into the browser bundle.
+ * Credentials come only from server-side environment variables: `HOSTINGER_EMAIL_PASSWORD`
+ * (the password for the contact@karalasoft.com mailbox). None of them are referenced from a
+ * client component, so they cannot leak into the browser bundle. The password is never
+ * logged — only booleans describing what was present.
  * ------------------------------------------------------------------------------------
  */
 
@@ -70,6 +72,60 @@ function json(body: { success: boolean; message: string }, status: number) {
 const badRequest = () => json({ success: false, message: GENERIC_VALIDATION }, 400);
 const serverError = () => json({ success: false, message: GENERIC_FAILURE }, 500);
 
+/* ------------------------------------------------------------ failure diagnosis */
+
+/**
+ * Turn an SMTP/Nodemailer failure into a one-line, actionable hint for the server log.
+ *
+ * The client always receives only GENERIC_FAILURE, so without this the sole record of *why*
+ * a send failed is an opaque 500. SMTP failures are usually configuration, so each branch
+ * names the specific variable or setting to check.
+ *
+ * Returns `null` when nothing specific can be said — the raw error is logged either way.
+ */
+function explainSmtpFailure(error: {
+  code?: string;
+  command?: string;
+  responseCode?: number;
+  response?: string;
+}): string | null {
+  const code = error.code ?? '';
+  const message = (error.response ?? '').toLowerCase();
+
+  if (code === 'EAUTH' || message.includes('authentication') || message.includes('535')) {
+    return (
+      'SMTP authentication failed. Check HOSTINGER_EMAIL_PASSWORD is the correct password for ' +
+      'the contact@karalasoft.com mailbox (not a Gmail or hosting-panel password), and that the ' +
+      'account has SMTP enabled in Hostinger.'
+    );
+  }
+
+  if (code === 'ECONNECTION' || code === 'ETIMEDOUT' || code === 'ECONNREFUSED') {
+    return (
+      `Could not reach the SMTP server (${error.code}). Check outbound SMTP is allowed on port ` +
+      '465 for this server/host.'
+    );
+  }
+
+  if (code === 'ETLS' || message.includes('certificate') || message.includes('ssl')) {
+    return 'TLS handshake failed on the secure SMTP connection. Port 465 expects implicit TLS (secure: true).';
+  }
+
+  if (error.responseCode === 550 || message.includes('550')) {
+    return 'SMTP server rejected the recipient (550). Confirm the mailbox exists and can receive mail.';
+  }
+
+  if (error.responseCode === 552 || message.includes('552') || message.includes('message size')) {
+    return 'SMTP server rejected the message body (552). The message may exceed the server size limit.';
+  }
+
+  if (code === 'EENVELOPE' || message.includes('from')) {
+    return 'SMTP server rejected the sender address. Confirm CONTACT_FROM_EMAIL is a mailbox on this SMTP account.';
+  }
+
+  return null;
+}
+
 export async function POST(request: Request) {
   const ip = clientKey(request);
   if (isRateLimited(ip)) {
@@ -111,26 +167,38 @@ export async function POST(request: Request) {
   }
 
   // 4. Server-only configuration.
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  const to = process.env.CONTACT_RECEIVER_EMAIL?.trim();
-  // Falls back to Resend's shared onboarding sender so the first test works before a
-  // custom domain is verified. Set CONTACT_FROM_EMAIL once your domain is verified.
-  const from = process.env.CONTACT_FROM_EMAIL?.trim() || 'onboarding@resend.dev';
+  const password = process.env.HOSTINGER_EMAIL_PASSWORD?.trim();
+  const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com';
+  const port = Number(process.env.SMTP_PORT?.trim() || '465');
+  const account = process.env.SMTP_USER?.trim() || 'contact@karalasoft.com';
+  const from = process.env.CONTACT_FROM_EMAIL?.trim() || account;
+  // Enquiries go to the contact mailbox unless a different recipient is configured.
+  const to = process.env.CONTACT_RECEIVER_EMAIL?.trim() || account;
 
-  if (!apiKey || !to) {
+  if (!password) {
     console.error('[contact] missing server configuration', {
-      hasApiKey: Boolean(apiKey),
-      hasReceiver: Boolean(to),
+      missing: ['HOSTINGER_EMAIL_PASSWORD'],
+      hint: 'Set HOSTINGER_EMAIL_PASSWORD in .env.local to the contact@karalasoft.com mailbox password, then restart the dev server.',
     });
     return serverError();
   }
 
   // 5. Send.
   try {
-    const resend = new Resend(apiKey);
     const email = renderContactEmail(submission);
 
-    const { data, error } = await resend.emails.send({
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      // Port 465 is implicit TLS: the connection is encrypted from the first byte, so no
+      // STARTTLS upgrade is negotiated.
+      secure: port === 465,
+      auth: { user: account, pass: password },
+    });
+
+    // Nodemailer rejects on failure rather than returning an error object, so this
+    // catch is where SMTP problems surface.
+    const info = await transporter.sendMail({
       from,
       to,
       subject: email.subject,
@@ -141,28 +209,38 @@ export async function POST(request: Request) {
       replyTo: submission.email,
     });
 
-    if (error) {
-      console.error('[contact] Resend rejected the message', {
-        name: error.name,
-        statusCode: error.statusCode,
-        message: error.message,
-      });
+    if (!info?.messageId) {
+      console.error('[contact] SMTP transport returned no message id', { from, to });
       return serverError();
     }
 
-    if (!data?.id) {
-      console.error('[contact] Resend returned no message id');
-      return serverError();
-    }
-
-    console.log('[contact] message sent', { id: data.id, topic: submission.need });
+    console.log('[contact] message sent', {
+      messageId: info.messageId,
+      topic: submission.need,
+      accepted: info.accepted?.length ?? 0,
+    });
     return json(
       { success: true, message: "Thanks! Your message has been sent successfully. We'll get back to you soon." },
       200,
     );
   } catch (error) {
-    // Network fault, DNS failure, invalid key, etc. Log the detail, return a clean 500.
-    console.error('[contact] unexpected error while sending', error);
+    // Auth, TLS, connection or recipient rejection. Log the actionable detail for
+    // developers while the client keeps receiving only GENERIC_FAILURE. The password is
+    // never logged, and neither is the visitor's message.
+    const smtpError = error as { code?: string; command?: string; responseCode?: number; response?: string };
+    const hint = explainSmtpFailure(smtpError);
+    console.error('[contact] SMTP send failed', {
+      code: smtpError.code,
+      command: smtpError.command,
+      responseCode: smtpError.responseCode,
+      response: smtpError.response,
+      message: error instanceof Error ? error.message : String(error),
+      host,
+      port,
+      from,
+      to,
+      ...(hint ? { hint } : {}),
+    });
     return serverError();
   }
 }
