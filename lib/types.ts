@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
 /** Primary navigation route. */
-export type RouteKey = 'home' | 'services' | 'products' | 'projects' | 'about' | 'contact';
+export type RouteKey = 'home' | 'services' | 'products' | 'apps' | 'projects' | 'about' | 'contact';
 
 export interface NavItem {
   readonly key: RouteKey;

@@ -74,6 +74,45 @@ export interface ProjectCreateInput {
 /** Mirrors `ProjectUpdate` — every field optional. */
 export type ProjectUpdateInput = Partial<ProjectCreateInput>;
 
+/** Mirrors `AppOut`. */
+export interface AdminApp {
+  id: number;
+  name: string;
+  app_name?: string | null;
+  title?: string | null;
+  description: string | null;
+  short_description?: string | null;
+  icon?: string | null;
+  image_url?: string | null;
+  image?: string | null;
+  platform?: string | null;
+  platform_info?: string | null;
+  download_url?: string | null;
+  url?: string | null;
+  link?: string | null;
+  published?: boolean;
+  is_published?: boolean;
+  status?: string | null;
+  order_index?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Mirrors `AppCreate` — only `name` is required server-side. */
+export interface AppCreateInput {
+  name: string;
+  description?: string | null;
+  icon?: string | null;
+  image_url?: string | null;
+  platform?: string | null;
+  download_url?: string | null;
+  published?: boolean;
+  order_index?: number;
+}
+
+/** Mirrors `AppUpdate` — every field optional. */
+export type AppUpdateInput = Partial<AppCreateInput>;
+
 export interface UploadResponse {
   url: string;
   filename: string;
@@ -276,6 +315,38 @@ export function updateProject(
 
 export async function deleteProject(token: string, id: number): Promise<void> {
   await adminFetch<void>(`/api/projects/${id}`, { method: 'DELETE', token });
+}
+
+export async function listApps(token: string, signal?: AbortSignal): Promise<AdminApp[]> {
+  const data = await adminFetch<AdminApp[] | { apps: AdminApp[] } | { data: AdminApp[] }>('/api/apps', {
+    token,
+    ...(signal ? { signal } : {}),
+  });
+  const list = Array.isArray(data)
+    ? data
+    : (data as { apps?: AdminApp[]; data?: AdminApp[] }).apps ||
+      (data as { apps?: AdminApp[]; data?: AdminApp[] }).data;
+  return Array.isArray(list) ? list : [];
+}
+
+export function getApp(token: string, id: number): Promise<AdminApp> {
+  return adminFetch<AdminApp>(`/api/apps/${id}`, { token });
+}
+
+export function createApp(token: string, input: AppCreateInput): Promise<AdminApp> {
+  return adminFetch<AdminApp>('/api/apps', { method: 'POST', token, body: input });
+}
+
+export function updateApp(
+  token: string,
+  id: number,
+  input: AppUpdateInput,
+): Promise<AdminApp> {
+  return adminFetch<AdminApp>(`/api/apps/${id}`, { method: 'PUT', token, body: input });
+}
+
+export async function deleteApp(token: string, id: number): Promise<void> {
+  await adminFetch<void>(`/api/apps/${id}`, { method: 'DELETE', token });
 }
 
 export function uploadImage(token: string, file: File): Promise<UploadResponse> {

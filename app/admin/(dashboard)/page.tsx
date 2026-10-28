@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Package,
   Plus,
+  // Smartphone,
   Users,
   Wrench,
 } from 'lucide-react';

@@ -18,6 +18,7 @@ export const siteConfig: SiteConfig = {
     { key: 'home', label: 'Home', href: '/' },
     { key: 'services', label: 'Services', href: '/services' },
     { key: 'products', label: 'Products', href: '/products' },
+    { key: 'apps', label: 'Apps', href: '/apps' },
     { key: 'projects', label: 'Projects', href: '/projects' },
     { key: 'about', label: 'About', href: '/about' },
     { key: 'contact', label: 'Contact', href: '/contact' },
