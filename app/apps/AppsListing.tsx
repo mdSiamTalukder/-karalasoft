@@ -4,9 +4,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import {
+  Apple,
   ArrowUpRight,
   Download,
-  Globe,
   Layers3,
   Search,
   SlidersHorizontal,
@@ -32,6 +32,7 @@ type ApiApp = {
   logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
+  apple_store_url: string | null;
   apk_download_url: string | null;
   status: 'Demo' | 'Published';
   is_published?: boolean;
@@ -87,64 +88,50 @@ function AppCard({ app }: { app: AppItem }) {
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 items-center gap-2 border-t border-line pt-4">
-        {app.playStoreUrl ? (
-          <a
-            href={app.playStoreUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Get ${app.name} on Google Play`}
-            className="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-xs font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:text-sm"
-          >
-            <Download size={15} aria-hidden="true" />
-            <span>Google Play</span>
-            <ArrowUpRight size={14} aria-hidden="true" />
-          </a>
-        ) : (
-          <button
-            type="button"
-            disabled
-            title="Google Play link is not available yet"
-            className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-line px-2 py-2 text-center text-xs text-muted opacity-60 sm:text-sm"
-          >
-            Google Play unavailable
-          </button>
-        )}
+      {(app.playStoreUrl ||
+        app.appleStoreUrl ||
+        app.apkDownloadUrl) && (
+        <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+          {app.playStoreUrl && (
+            <a
+              href={app.playStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Get ${app.name} on Google Play`}
+              className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-xs font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:text-sm"
+            >
+              <Download size={15} aria-hidden="true" />
+              <span>Google Play</span>
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          )}
 
-        {app.websiteUrl ? (
-          <a
-            href={app.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Visit ${app.name} website`}
-            className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl border border-line bg-veil/[0.04] px-2 py-2 text-center text-xs font-medium transition-colors hover:bg-veil/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:gap-2 sm:px-3 sm:text-sm"
-          >
-            <Globe size={16} aria-hidden="true" />
-            <span>Visit Website</span>
-            <ArrowUpRight size={14} aria-hidden="true" />
-          </a>
-        ) : (
-          <button
-            type="button"
-            disabled
-            title="Website link is not available yet"
-            className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-line px-2 py-2 text-center text-xs text-muted opacity-60 sm:text-sm"
-          >
-            Website unavailable
-          </button>
-        )}
+          {app.appleStoreUrl && (
+            <a
+              href={app.appleStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Get ${app.name} on the Apple App Store`}
+              className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-line bg-veil/[0.04] px-2 py-2 text-center text-xs font-medium transition-colors hover:bg-veil/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:text-sm"
+            >
+              <Apple size={16} aria-hidden="true" />
+              <span>App Store</span>
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          )}
 
-        {app.apkDownloadUrl && (
-          <a
-            href={app.apkDownloadUrl}
-            download
-            className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-sm font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50"
-          >
-            <Download size={15} aria-hidden="true" />
-            <span>Download APK</span>
-          </a>
-        )}
-      </div>
+          {app.apkDownloadUrl && (
+            <a
+              href={app.apkDownloadUrl}
+              download
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-sm font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50"
+            >
+              <Download size={15} aria-hidden="true" />
+              <span>Download APK</span>
+            </a>
+          )}
+        </div>
+      )}
     </article>
   );
 }
@@ -189,9 +176,10 @@ export function AppsListing() {
           description: app.description || '',
           features: Array.isArray(app.features) ? app.features : [],
           logo_url: app.logo_url || null,
-          websiteUrl: app.website_url,
-          playStoreUrl: app.play_store_url,
-          apkDownloadUrl: app.apk_download_url,
+          websiteUrl: app.website_url || null,
+          playStoreUrl: app.play_store_url || null,
+          appleStoreUrl: app.apple_store_url || null,
+          apkDownloadUrl: app.apk_download_url || null,
         }));
 
         if (!controller.signal.aborted) {

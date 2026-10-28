@@ -11,6 +11,7 @@ export type AppItem = {
   logo_url: string | null;
   websiteUrl: string | null;
   playStoreUrl: string | null;
+  appleStoreUrl: string | null;
   apkDownloadUrl: string | null;
 };
 

@@ -19,6 +19,7 @@ type AppRow = {
   logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
+  apple_store_url: string | null;
   apk_download_url: string | null;
   status: 'Demo' | 'Published';
   is_published: boolean;
@@ -42,6 +43,7 @@ export default async function AdminAppsPage() {
         logo_url,
         website_url,
         play_store_url,
+        apple_store_url,
         apk_download_url,
         status,
         is_published,
@@ -61,6 +63,7 @@ export default async function AdminAppsPage() {
     id: String(app.id),
     features: app.features ?? [],
     logo_url: app.logo_url ?? null,
+    apple_store_url: app.apple_store_url ?? null,
   }));
 
   return (

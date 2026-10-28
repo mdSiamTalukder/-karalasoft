@@ -26,6 +26,7 @@ type AppItem = {
   logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
+  apple_store_url: string | null;
   apk_download_url: string | null;
   status: 'Demo' | 'Published';
   is_published: boolean;
@@ -45,6 +46,7 @@ const initialForm = {
   logo_url: '',
   website_url: '',
   play_store_url: '',
+  apple_store_url: '',
   apk_download_url: '',
   is_published: true,
   order_index: 0,
@@ -98,6 +100,7 @@ export default function AdminAppsManager({
       logo_url: app.logo_url ?? '',
       website_url: app.website_url ?? '',
       play_store_url: app.play_store_url ?? '',
+      apple_store_url: app.apple_store_url ?? '',
       apk_download_url: app.apk_download_url ?? '',
       is_published: app.is_published,
       order_index: app.order_index ?? 0,
@@ -181,6 +184,7 @@ export default function AdminAppsManager({
         logoUrl: form.logo_url.trim() || null,
         websiteUrl: form.website_url.trim() || null,
         playStoreUrl: form.play_store_url.trim() || null,
+        appleStoreUrl: form.apple_store_url.trim() || null,
         apkDownloadUrl: form.apk_download_url.trim() || null,
         isPublished: form.is_published,
         orderIndex: Number(form.order_index),
@@ -500,6 +504,19 @@ export default function AdminAppsManager({
               />
             </label>
 
+            <label className="space-y-2 text-sm text-slate-300">
+              Apple App Store URL
+              <input
+                type="url"
+                className={inputClass}
+                value={form.apple_store_url}
+                onChange={(e) =>
+                  updateField('apple_store_url', e.target.value)
+                }
+                placeholder="https://apps.apple.com/..."
+              />
+            </label>
+
             <div className="space-y-2 text-sm text-slate-300 md:col-span-2">
               <label htmlFor="apk-upload" className="block">
                 APK File
@@ -528,7 +545,10 @@ export default function AdminAppsManager({
               </p>
 
               {uploadingApk && (
-                <p role="status" className="flex items-center gap-2 text-sm text-cyan-300">
+                <p
+                  role="status"
+                  className="flex items-center gap-2 text-sm text-cyan-300"
+                >
                   <LoaderCircle size={16} className="animate-spin" />
                   Uploading APK... Please wait.
                 </p>

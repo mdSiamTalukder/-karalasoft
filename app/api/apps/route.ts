@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAdminSession } from '@/lib/admin-session';
@@ -16,6 +15,7 @@ type AppRow = {
   logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
+  apple_store_url: string | null;
   apk_download_url: string | null;
   status: 'Demo' | 'Published';
   is_published: boolean;
@@ -60,6 +60,7 @@ function validPayload(body: Record<string, unknown>) {
     isOptionalString(body.logoUrl) &&
     isOptionalString(body.websiteUrl) &&
     isOptionalString(body.playStoreUrl) &&
+    isOptionalString(body.appleStoreUrl) &&
     isOptionalString(body.apkDownloadUrl) &&
     (body.status === undefined ||
       body.status === 'Demo' ||
@@ -78,8 +79,8 @@ export async function GET() {
     const result = await db.query<AppRow>(
       `SELECT id, slug, name, category, short_description,
               description, features, logo_url, website_url,
-              play_store_url, apk_download_url, status,
-              is_published, order_index, created_at, updated_at
+              play_store_url, apple_store_url, apk_download_url,
+              status, is_published, order_index, created_at, updated_at
        FROM apps
        WHERE is_published = TRUE
        ORDER BY order_index ASC, created_at DESC`,
@@ -148,11 +149,12 @@ export async function POST(request: Request) {
       `INSERT INTO apps (
          slug, name, category, short_description, description,
          features, logo_url, website_url, play_store_url,
-         apk_download_url, status, is_published, order_index
+         apple_store_url, apk_download_url, status,
+         is_published, order_index
        )
        VALUES (
          $1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10,
-         $11, $12, $13
+         $11, $12, $13, $14
        )
        RETURNING *`,
       [
@@ -165,6 +167,7 @@ export async function POST(request: Request) {
         data.logoUrl ?? null,
         data.websiteUrl ?? null,
         data.playStoreUrl ?? null,
+        data.appleStoreUrl ?? null,
         data.apkDownloadUrl ?? null,
         status,
         isPublished,

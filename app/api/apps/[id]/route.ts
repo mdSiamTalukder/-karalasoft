@@ -33,6 +33,7 @@ function isValidPayload(body: Record<string, unknown>) {
     'logoUrl',
     'websiteUrl',
     'playStoreUrl',
+    'appleStoreUrl',
     'apkDownloadUrl',
     'status',
     'isPublished',
@@ -61,6 +62,7 @@ function isValidPayload(body: Record<string, unknown>) {
     isOptionalString(body.logoUrl) &&
     isOptionalString(body.websiteUrl) &&
     isOptionalString(body.playStoreUrl) &&
+    isOptionalString(body.appleStoreUrl) &&
     isOptionalString(body.apkDownloadUrl) &&
     (body.status === undefined ||
       body.status === 'Demo' ||
@@ -221,6 +223,10 @@ export async function PATCH(
 
     if (data.playStoreUrl !== undefined) {
       addField('play_store_url', data.playStoreUrl);
+    }
+
+    if (data.appleStoreUrl !== undefined) {
+      addField('apple_store_url', data.appleStoreUrl);
     }
 
     if (data.apkDownloadUrl !== undefined) {
