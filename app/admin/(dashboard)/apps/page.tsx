@@ -16,6 +16,7 @@ type AppRow = {
   short_description: string;
   description: string;
   features: string[] | null;
+  logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
   apk_download_url: string | null;
@@ -38,6 +39,7 @@ export default async function AdminAppsPage() {
         short_description,
         description,
         features,
+        logo_url,
         website_url,
         play_store_url,
         apk_download_url,
@@ -58,6 +60,7 @@ export default async function AdminAppsPage() {
     ...app,
     id: String(app.id),
     features: app.features ?? [],
+    logo_url: app.logo_url ?? null,
   }));
 
   return (

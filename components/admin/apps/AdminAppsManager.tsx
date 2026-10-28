@@ -22,6 +22,7 @@ type AppItem = {
   short_description: string;
   description: string;
   features: string[];
+  logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
   apk_download_url: string | null;
@@ -40,6 +41,7 @@ const initialForm = {
   short_description: '',
   description: '',
   features: '',
+  logo_url: '',
   website_url: '',
   play_store_url: '',
   apk_download_url: '',
@@ -87,6 +89,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
       short_description: app.short_description ?? '',
       description: app.description ?? '',
       features: Array.isArray(app.features) ? app.features.join('\n') : '',
+      logo_url: app.logo_url ?? '',
       website_url: app.website_url ?? '',
       play_store_url: app.play_store_url ?? '',
       apk_download_url: app.apk_download_url ?? '',
@@ -114,7 +117,6 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
     try {
       const payload = {
         name: form.name.trim(),
-        slug: form.slug.trim(),
         category: form.category.trim() || 'Other',
         shortDescription: form.short_description.trim(),
         description: form.description.trim(),
@@ -122,6 +124,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
           .split('\n')
           .map((feature) => feature.trim())
           .filter(Boolean),
+        logoUrl: form.logo_url.trim() || null,
         websiteUrl: form.website_url.trim() || null,
         playStoreUrl: form.play_store_url.trim() || null,
         apkDownloadUrl: form.apk_download_url.trim() || null,
@@ -339,7 +342,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
                 className={inputClass}
                 value={form.slug}
                 onChange={(e) => updateField('slug', e.target.value)}
-                placeholder="e.g. flowdesk-demo"
+                placeholder="Auto-generated from app name"
               />
             </label>
 
@@ -403,6 +406,20 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
                 onChange={(e) => updateField('features', e.target.value)}
                 placeholder={'Task management\nTeam collaboration\nReports'}
               />
+            </label>
+
+            <label className="space-y-2 text-sm text-slate-300 md:col-span-2">
+              App Logo URL
+              <input
+                type="url"
+                className={inputClass}
+                value={form.logo_url}
+                onChange={(e) => updateField('logo_url', e.target.value)}
+                placeholder="https://example.com/app-logo.png"
+              />
+              <span className="block text-xs text-slate-500">
+                Enter a direct, publicly accessible image URL for the app logo.
+              </span>
             </label>
 
             <label className="space-y-2 text-sm text-slate-300">

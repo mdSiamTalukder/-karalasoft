@@ -30,6 +30,7 @@ function isValidPayload(body: Record<string, unknown>) {
     'shortDescription',
     'description',
     'features',
+    'logoUrl',
     'websiteUrl',
     'playStoreUrl',
     'apkDownloadUrl',
@@ -57,6 +58,7 @@ function isValidPayload(body: Record<string, unknown>) {
     (body.features === undefined ||
       (Array.isArray(body.features) &&
         body.features.every((item) => typeof item === 'string'))) &&
+    isOptionalString(body.logoUrl) &&
     isOptionalString(body.websiteUrl) &&
     isOptionalString(body.playStoreUrl) &&
     isOptionalString(body.apkDownloadUrl) &&
@@ -207,6 +209,10 @@ export async function PATCH(
     if (Array.isArray(data.features)) {
       values.push(JSON.stringify(data.features));
       fields.push(`features = $${values.length}::jsonb`);
+    }
+
+    if (data.logoUrl !== undefined) {
+      addField('logo_url', data.logoUrl);
     }
 
     if (data.websiteUrl !== undefined) {

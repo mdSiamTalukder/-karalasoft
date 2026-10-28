@@ -2,11 +2,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import {
   ArrowUpRight,
   Download,
+  Globe,
   Layers3,
-  Play,
   Search,
   SlidersHorizontal,
   Sparkles,
@@ -28,6 +29,7 @@ type ApiApp = {
   short_description: string | null;
   description: string | null;
   features: string[] | null;
+  logo_url: string | null;
   website_url: string | null;
   play_store_url: string | null;
   apk_download_url: string | null;
@@ -39,14 +41,36 @@ type ApiApp = {
 const CATEGORIES = ['All apps'];
 
 function AppCard({ app }: { app: AppItem }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  const logoUrl = app.logo_url?.trim() || '';
+
   return (
     <article className="group flex h-full min-w-0 flex-col rounded-2xl border border-line glass p-5 transition-colors duration-200 hover:border-[#5377FF]/50 sm:p-7">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#5377FF]/20 bg-[#5377FF]/10 text-[#829AFF]">
-          <Layers3 size={21} strokeWidth={1.7} aria-hidden="true" />
+        <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#5377FF]/20 bg-[#5377FF]/10 text-[#829AFF]">
+          {logoUrl && !logoFailed ? (
+            <Image
+              src={logoUrl}
+              alt={`${app.name} logo`}
+              width={44}
+              height={44}
+              className="size-full object-contain"
+              unoptimized
+              onError={() => setLogoFailed(true)}
+            />
+          ) : (
+            <Layers3
+              size={21}
+              strokeWidth={1.7}
+              aria-hidden="true"
+            />
+          )}
         </div>
 
-        <span className="text-xs font-medium text-muted">{app.status}</span>
+        <span className="text-xs font-medium text-muted">
+          {app.status}
+        </span>
       </div>
 
       <div className="mt-5 flex-1">
@@ -63,48 +87,62 @@ function AppCard({ app }: { app: AppItem }) {
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-2 border-t border-line pt-4">
+      <div className="mt-6 grid grid-cols-2 items-center gap-2 border-t border-line pt-4">
         {app.playStoreUrl ? (
           <a
             href={app.playStoreUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#5377FF] px-2 py-2 text-center text-xs font-medium text-white transition-colors hover:bg-[#4265E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:gap-2 sm:text-sm"
+            aria-label={`Get ${app.name} on Google Play`}
+            className="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-xs font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:text-sm"
           >
-            <Play size={15} aria-hidden="true" />
+            <Download size={15} aria-hidden="true" />
             <span>Google Play</span>
+            <ArrowUpRight size={14} aria-hidden="true" />
           </a>
         ) : (
           <button
             type="button"
             disabled
             title="Google Play link is not available yet"
-            className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border border-line px-2 py-2 text-center text-xs text-muted opacity-60 sm:gap-2 sm:text-sm"
+            className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-line px-2 py-2 text-center text-xs text-muted opacity-60 sm:text-sm"
           >
-            <Play size={15} aria-hidden="true" />
-            <span>Google Play</span>
+            Google Play unavailable
           </button>
         )}
 
-        {app.apkDownloadUrl ? (
+        {app.websiteUrl ? (
           <a
-            href={app.apkDownloadUrl}
-            download
-            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-xs font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:gap-2 sm:text-sm"
+            href={app.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Visit ${app.name} website`}
+            className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl border border-line bg-veil/[0.04] px-2 py-2 text-center text-xs font-medium transition-colors hover:bg-veil/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50 sm:gap-2 sm:px-3 sm:text-sm"
           >
-            <Download size={15} aria-hidden="true" />
-            <span>Download APK</span>
+            <Globe size={16} aria-hidden="true" />
+            <span>Visit Website</span>
+            <ArrowUpRight size={14} aria-hidden="true" />
           </a>
         ) : (
           <button
             type="button"
             disabled
-            title="APK download is not available yet"
-            className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border border-line px-2 py-2 text-center text-xs text-muted opacity-60 sm:gap-2 sm:text-sm"
+            title="Website link is not available yet"
+            className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-line px-2 py-2 text-center text-xs text-muted opacity-60 sm:text-sm"
+          >
+            Website unavailable
+          </button>
+        )}
+
+        {app.apkDownloadUrl && (
+          <a
+            href={app.apkDownloadUrl}
+            download
+            className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#5377FF]/40 px-2 py-2 text-center text-sm font-medium text-[#829AFF] transition-colors hover:bg-[#5377FF]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5377FF]/50"
           >
             <Download size={15} aria-hidden="true" />
             <span>Download APK</span>
-          </button>
+          </a>
         )}
       </div>
     </article>
@@ -150,6 +188,7 @@ export function AppsListing() {
           shortDescription: app.short_description || '',
           description: app.description || '',
           features: Array.isArray(app.features) ? app.features : [],
+          logo_url: app.logo_url || null,
           websiteUrl: app.website_url,
           playStoreUrl: app.play_store_url,
           apkDownloadUrl: app.apk_download_url,

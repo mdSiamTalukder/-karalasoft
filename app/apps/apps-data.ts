@@ -8,6 +8,7 @@ export type AppItem = {
   href: string;
   shortDescription: string;
   features: string[];
+  logo_url: string | null;
   websiteUrl: string | null;
   playStoreUrl: string | null;
   apkDownloadUrl: string | null;
@@ -30,6 +31,7 @@ export const APPS: AppItem[] = [
       'Clean and responsive workspace',
       'Designed for focused productivity',
     ],
+    logo_url: null,
     websiteUrl: null,
     playStoreUrl: null,
     apkDownloadUrl: null,
@@ -50,6 +52,7 @@ export const APPS: AppItem[] = [
       'Store performance insights concept',
       'Responsive management experience',
     ],
+    logo_url: null,
     websiteUrl: null,
     playStoreUrl: null,
     apkDownloadUrl: null,
@@ -70,6 +73,7 @@ export const APPS: AppItem[] = [
       'Guest-friendly browsing experience',
       'Responsive interface concept',
     ],
+    logo_url: null,
     websiteUrl: null,
     playStoreUrl: null,
     apkDownloadUrl: null,
@@ -90,6 +94,7 @@ export const APPS: AppItem[] = [
       'Order workflow overview',
       'Business-focused responsive layout',
     ],
+    logo_url: null,
     websiteUrl: null,
     playStoreUrl: null,
     apkDownloadUrl: null,
