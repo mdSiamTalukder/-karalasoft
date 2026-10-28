@@ -1,8 +1,9 @@
 
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { upload } from '@vercel/blob/client';
 import {
   Plus,
   X,
@@ -51,13 +52,18 @@ const initialForm = {
 
 type AppForm = typeof initialForm;
 
-export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
+export default function AdminAppsManager({
+  apps,
+}: {
+  apps: AppItem[];
+}) {
   const router = useRouter();
 
   const [showForm, setShowForm] = useState(false);
   const [editingApp, setEditingApp] = useState<AppItem | null>(null);
   const [form, setForm] = useState<AppForm>(initialForm);
   const [saving, setSaving] = useState(false);
+  const [uploadingApk, setUploadingApk] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busyAppId, setBusyAppId] = useState<string | null>(null);
@@ -105,10 +111,58 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
     setEditingApp(null);
     setForm(initialForm);
     setError('');
+    setSuccess('');
+  }
+
+  async function handleApkUpload(file: File) {
+    setError('');
+    setSuccess('');
+
+    if (!file.name.toLowerCase().endsWith('.apk')) {
+      setError('Please select a valid .apk file.');
+      return;
+    }
+
+    if (file.size > 500 * 1024 * 1024) {
+      setError('APK file must be 500 MB or smaller.');
+      return;
+    }
+
+    setUploadingApk(true);
+
+    try {
+      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+
+      const blob = await upload(
+        `apks/${Date.now()}-${safeFileName}`,
+        file,
+        {
+          access: 'public',
+          handleUploadUrl: '/api/apps/upload',
+          multipart: true,
+        },
+      );
+
+      updateField('apk_download_url', blob.url);
+      setSuccess(
+        'APK uploaded successfully. Click Save App or Update App to save the URL.',
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to upload APK.',
+      );
+    } finally {
+      setUploadingApk(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (uploadingApk) {
+      setError('Please wait until the APK upload finishes.');
+      return;
+    }
 
     setSaving(true);
     setError('');
@@ -446,18 +500,61 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
               />
             </label>
 
-            <label className="space-y-2 text-sm text-slate-300 md:col-span-2">
-              APK Download URL
+            <div className="space-y-2 text-sm text-slate-300 md:col-span-2">
+              <label htmlFor="apk-upload" className="block">
+                APK File
+              </label>
+
               <input
-                type="url"
-                className={inputClass}
-                value={form.apk_download_url}
-                onChange={(e) =>
-                  updateField('apk_download_url', e.target.value)
-                }
-                placeholder="https://example.com/app.apk"
+                id="apk-upload"
+                type="file"
+                accept=".apk,application/vnd.android.package-archive,application/octet-stream"
+                disabled={uploadingApk || saving}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                  const file = event.target.files?.[0];
+
+                  if (file) {
+                    void handleApkUpload(file);
+                  }
+
+                  event.target.value = '';
+                }}
+                className={`${inputClass} file:mr-4 file:rounded-lg file:border-0 file:bg-cyan-400 file:px-3 file:py-2 file:font-semibold file:text-slate-950`}
               />
-            </label>
+
+              <p className="text-xs text-slate-500">
+                Select an APK file up to 500 MB. Save the app after uploading
+                to keep the download URL.
+              </p>
+
+              {uploadingApk && (
+                <p role="status" className="flex items-center gap-2 text-sm text-cyan-300">
+                  <LoaderCircle size={16} className="animate-spin" />
+                  Uploading APK... Please wait.
+                </p>
+              )}
+
+              {form.apk_download_url && (
+                <div className="space-y-2">
+                  <a
+                    href={form.apk_download_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block break-all text-sm text-cyan-300 hover:text-cyan-200"
+                  >
+                    View uploaded APK ↗
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => updateField('apk_download_url', '')}
+                    className="ml-3 text-sm text-red-300 hover:text-red-200"
+                  >
+                    Remove APK URL
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <label className="flex items-center gap-3 text-sm text-slate-300">
@@ -475,7 +572,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
           <div className="flex flex-wrap gap-3">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploadingApk}
               className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? (
@@ -493,7 +590,8 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
             <button
               type="button"
               onClick={closeForm}
-              className="rounded-xl border border-white/10 px-5 py-3 text-sm text-slate-300 transition hover:bg-white/5"
+              disabled={saving || uploadingApk}
+              className="rounded-xl border border-white/10 px-5 py-3 text-sm text-slate-300 transition hover:bg-white/5 disabled:opacity-60"
             >
               Cancel
             </button>
@@ -558,7 +656,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
                       type="button"
                       title="Edit app"
                       aria-label={`Edit ${app.name}`}
-                      disabled={isBusy || saving}
+                      disabled={isBusy || saving || uploadingApk}
                       onClick={() => openEditForm(app)}
                       className={`${actionButtonClass} border-cyan-400/20 text-cyan-300 hover:bg-cyan-400/10 hover:text-cyan-200`}
                     >
@@ -569,7 +667,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
                       type="button"
                       title={app.is_published ? 'Unpublish app' : 'Publish app'}
                       aria-label={`${app.is_published ? 'Unpublish' : 'Publish'} ${app.name}`}
-                      disabled={isBusy || saving}
+                      disabled={isBusy || saving || uploadingApk}
                       onClick={() => togglePublished(app)}
                       className={`${actionButtonClass} border-white/10 text-slate-300 hover:bg-white/5 hover:text-white`}
                     >
@@ -586,7 +684,7 @@ export default function AdminAppsManager({ apps }: { apps: AppItem[] }) {
                       type="button"
                       title="Delete app"
                       aria-label={`Delete ${app.name}`}
-                      disabled={isBusy || saving}
+                      disabled={isBusy || saving || uploadingApk}
                       onClick={() => deleteApp(app)}
                       className={`${actionButtonClass} border-red-400/20 text-red-300 hover:bg-red-400/10 hover:text-red-200`}
                     >
